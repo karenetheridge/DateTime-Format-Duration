@@ -1,6 +1,6 @@
 Revision history for DateTime-Format-Duration
 
-{{$NEXT}}
+1.04    2015-09-20 06:17:20Z
     - converted tooling to Dist::Zilla (fixes RT#48187, RT#82055, RT#53462)
     - added missing prereq declarations (Params::Validate)
     - fix ""Unescaped left brace in regex is deprecated" warning in 5.22+
