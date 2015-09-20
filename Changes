@@ -1,5 +1,9 @@
 Revision history for DateTime-Format-Duration
 
+{{$NEXT}}
+    - converted tooling to Dist::Zilla (fixes RT#48187, RT#82055, RT#53462)
+    - added missing prereq declarations (Params::Validate)
+
 1.03    2007-06-01
     - the Björn Again release
         - This has been a looooong time coming, and I've only just
