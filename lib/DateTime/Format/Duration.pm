@@ -1,4 +1,5 @@
 package DateTime::Format::Duration;
+# ABSTRACT: Format and parse DateTime::Durations
 
 use Params::Validate qw( validate SCALAR OBJECT ARRAYREF HASHREF UNDEF );
 use Carp;
@@ -674,9 +675,7 @@ sub _hours_in_day{
 
 __END__
 
-=head1 NAME
-
-DateTime::Format::Duration - Format and parse DateTime::Durations
+=pod
 
 =head1 SYNOPSIS
 
@@ -1111,19 +1110,6 @@ expressions:
 These both create the same string in $one and $two, but if you don't already
 have a DateTime::Duration object, the later looks cleaner.
 
-=head1 AUTHOR
-
-Rick Measham <rickm@cpan.org>
-
-=head1 COPYRIGHT
-
-Copyright (c) 2003 - 2004 Rick Measham.  All rights reserved.  This program
-is free software; you can redistribute it and/or modify it under the same
-terms as Perl itself.
-
-The full text of the license can be found in the LICENSE file included
-with this module.
-
 =head1 SEE ALSO
 
 datetime@perl.org mailing list
@@ -1131,4 +1117,3 @@ datetime@perl.org mailing list
 http://datetime.perl.org/
 
 =cut
-
