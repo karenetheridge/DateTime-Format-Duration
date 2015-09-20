@@ -26,7 +26,7 @@ Revision history for DateTime-Format-Duration
         - fixed a missing escape on the whitespace parser
             - thanks to fairly anonymous CPAN tester!
 
-1.01    Thu Jan  8 13:19:00 2004 (Australia/Melbourne)
+1.01    2004-01-08 02:19:00Z
     - the 'Britney Spears' release (oops I did it again)
         - Removed reliance on DateTime::Event::DST which doesn't exist!
             - Thanks David Wheeler and Mike Castle
@@ -36,12 +36,12 @@ Revision history for DateTime-Format-Duration
         - Moved old, redundant tests to *.old.
           They should still pass if you want them!
 
-1.0002  Wed Jan  7 23:35:00 2004 (Australia/Melbourne)
+1.0002  2004-01-07 12:35:00Z
     - quiet release to cpan
         - This release just fixes some doc bugs I should have fixed last night.
           Sorry!
 
-1.0001  Tue Jan  6 20:18:00 2004 (Australia/Melbourne)
+1.0001  2004-01-06 09:18:00Z
     - second release to mailing list
         - Support for Leap Seconds
         - Normalise dramtically overhauled and quickened
@@ -55,10 +55,10 @@ Revision history for DateTime-Format-Duration
           place to get errors!
         Thanks to Dave Rolsky for most of the above suggestions.
 
-1.00    Tue Dec 16 00:29:43 2003 (Australia/Melbourne)
+1.00    2003-12-15 13:29:43Z
     - Changed name to DateTime::Format::Duration
     - initial release to mailing list
 
-0.00    Sun Nov  9 18:39:56 2003
+0.00    2003-11-09 07:39:56Z
     - original version; created by h2xs 1.22 with options
         -X -v1.00 --use-new-tests -b5.0.5 -nDateTime::Format::StrfDuration
