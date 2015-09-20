@@ -13,7 +13,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw/strpduration strfduration/;
 our %EXPORT_TAGS = (ALL => [qw/strpduration strfduration/]);
 
-our $VERSION = '1.03';
+our $VERSION = '1.04';
 
 #---------------------------------------------------------------------------
 # CONSTRUCTORS
