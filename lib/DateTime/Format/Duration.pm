@@ -575,8 +575,8 @@ sub _build_parser {
 
 
     # Any function in DateTime.
-    $regex =~ s|%{(\w+)}|($tempdur->can($1)) ? "(.+)" : ".+"|eg;
-    $field_list =~ s|(%{(\w+)})|($tempdur->can($2)) ? "#$2#" : $1 |eg;
+    $regex =~ s|%\{(\w+)}|($tempdur->can($1)) ? "(.+)" : ".+"|eg;
+    $field_list =~ s|(%\{(\w+)})|($tempdur->can($2)) ? "#$2#" : $1 |eg;
 
     # White space:
     $regex =~ s/%(\d*)[tn]/($1) ? "\\s{$1}" : "\\s+"/eg;
