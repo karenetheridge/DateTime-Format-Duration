@@ -1,9 +1,9 @@
 Revision history for Perl extension DateTime::Format::Duration.
 
 1.03    2007-06-01
-    - the Björn Again release
+    - the BjÃ¶rn Again release
         - This has been a looooong time coming, and I've only just
-          managed to get off my arse and fix it thanks to Björn
+          managed to get off my arse and fix it thanks to BjÃ¶rn
           Tackmann.
         - Fixed test 41 was incorrect.
         - All other tests were correct, but as date math had changed,
