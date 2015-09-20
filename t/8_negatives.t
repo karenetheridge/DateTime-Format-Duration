@@ -17,8 +17,8 @@ $strf = DateTime::Format::Duration->new(
 @tests = (
     { # 1 & 2
         pattern     =>  '%P%F %r',
-        duration => { 
-            years   =>  2, 
+        duration => {
+            years   =>  2,
             months  =>  1,
             days    => 22,
             hours   => 11,
@@ -31,7 +31,7 @@ $strf = DateTime::Format::Duration->new(
     },
     { # 3 & 4
         pattern     =>  '%P%F %r',
-        duration => { 
+        duration => {
             minutes => -1,
         },
         diagnostic => 0,
@@ -41,8 +41,8 @@ $strf = DateTime::Format::Duration->new(
     },
     { # 5 & 6
         pattern     =>  '%P%F %r',
-        duration => { 
-            years   =>  -2, 
+        duration => {
+            years   =>  -2,
             months  =>  1,
             days    => 22,
             hours   => 11,
@@ -55,8 +55,8 @@ $strf = DateTime::Format::Duration->new(
     },
     { # 7 & 8
         pattern     =>  '%P%F %r',
-        duration => { 
-            years   =>  -2, 
+        duration => {
+            years   =>  -2,
             months  =>  -1,
             days    => -22,
             hours   => -11,
@@ -69,8 +69,8 @@ $strf = DateTime::Format::Duration->new(
     },
     { # 7 & 8
         pattern     =>  '%P%F %r',
-        duration => { 
-            years   =>  2, 
+        duration => {
+            years   =>  2,
             months  =>  1,
             days    => 22,
             hours   => 11,
@@ -87,11 +87,11 @@ foreach my $test (@tests) {
     $test->{title} ||= $test->{pattern};
     $strf->set_pattern( $test->{pattern} );
     $strf->{diagnostic} = 1 if $test->{diagnostic};
-    is( 
+    is(
         $strf->format_duration_from_deltas( %{$test->{duration}} ),
         $test->{expect},
         $test->{title}
-    ) or diag( "Failed on " . $test->{pattern} . "\n" . 
+    ) or diag( "Failed on " . $test->{pattern} . "\n" .
                "Got: " . Dump( $test->{duration} ));
     $strf->{diagnostic} = 0;
 }

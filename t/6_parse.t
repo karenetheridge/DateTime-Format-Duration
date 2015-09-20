@@ -37,12 +37,12 @@ test(
     ['%W', '1.5',       '0000-00-10 12:00:00.000000000'],
     ['%y', '2',         '0002-00-00 00:00:00.000000000'],
     ['%Y', '0002',      '0002-00-00 00:00:00.000000000'],
-    
+
     ['%F', '0002-03-04',    '0002-03-04 00:00:00.000000000', '%P%F %r.%N', 'Group Components'],
     ['%r', '02:03:04',      '0000-00-00 02:03:04.000000000'],
     ['%R', '02:03',         '0000-00-00 02:03:00.000000000'],
-    ['%T', '-02:-03:-04',   '-0000-00-00 02:03:04.000000000'],    
-    
+    ['%T', '-02:-03:-04',   '-0000-00-00 02:03:04.000000000'],
+
 );
 
 
@@ -51,14 +51,14 @@ test(
 
 sub test {
     my @tests = @_;
-    
+
     foreach my $test (@tests) {
         $x++;
         next unless in_range($x);
-        
+
         diag($test->[4]) if $test->[4];
-        is( 
-            DateTime::Format::Duration::strfduration( 
+        is(
+            DateTime::Format::Duration::strfduration(
                 pattern => $test->[3] || '%P%F %r.%N',
                 normalise => 1,
                 duration => DateTime::Format::Duration::strpduration(
@@ -80,24 +80,24 @@ sub in_range {
     return 1 unless $ARGV[0];
 
     my $test = shift;
-    
+
     $argv = join(',', @ARGV);
     $argv=~s/,\.\.,/../g;
     $argv=~s/,,/,/g;
-    
+
     $argv=~s/\!//;
-    
+
     return 1 if $argv=~/\b$test\b/;
-    
+
     foreach my $part( split(/,\s*/, $argv) ) {
         my ($start, $end) = $part =~ /(\d+)\s*\.\.\s*(\d+)/;
         ($start, $end) = ($end, $start) if $end and $start and $end < $start;
-        
+
         next if $start and $test and $start > $test;
         return 1 if $end and $test and $end > $test
-        
+
     }
-    
+
     return 0;
 }
 
