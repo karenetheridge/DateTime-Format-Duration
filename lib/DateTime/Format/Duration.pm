@@ -589,7 +589,7 @@ sub _build_parser {
     $field_list=~s/#([a-z0-9_]+)#/\$$1, /gi;
     $field_list=~s/,\s*$//;
 
-    croak("Unknown symbols in parse: $&") if $field_list=~/(\%\w)/g;
+    croak("Unknown symbols in parse: $1") if $field_list=~/(\%\w)/g;
 
     $self->{parser} = qq|($field_list) = \$time_string =~ /$regex/|;
 }

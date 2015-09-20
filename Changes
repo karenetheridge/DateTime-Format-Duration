@@ -5,6 +5,7 @@ Revision history for DateTime-Format-Duration
     - added missing prereq declarations (Params::Validate)
     - fix ""Unescaped left brace in regex is deprecated" warning in 5.22+
       (RT#101607)
+    - remove use of $& to improve executable speed (RT#97667)
 
 1.03    2007-06-01
     - the Björn Again release
