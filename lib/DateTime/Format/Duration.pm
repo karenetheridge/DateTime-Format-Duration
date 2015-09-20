@@ -1004,9 +1004,11 @@ place:
     2001-02-22T00:00:00 + 11 hours  = 2001-02-23T11:00:00 === -1y, 10m, 6d, 13h
     2001-02-22T11:00:00 - 9 minutes = 2001-02-23T10:51:00 === -1y, 10m, 6d, 13h, 9m
 
-=for html <img src="http://search.cpan.org/src/RICKM/DateTime-Format-Duration-1.0002/docs/figure1.gif">
+=for comment TODO: replace via Pod::Weaver with the base64'd inline image; see Pod::Weaver::Section::Ditaa
 
-=for man See: http://search.cpan.org/src/RICKM/DateTime-Format-Duration-1.0002/docs/figure1.gif
+=for html <img src="https://raw.githubusercontent.com/karenetheridge/DateTime-Format-Duration/master/docs/figure1.gif">
+
+=for man See: https://raw.githubusercontent.com/karenetheridge/DateTime-Format-Duration/master/docs/figure1.gif
 
 Figure 1 illustrates that, with the given base, -2 years, +1 month,
 +22 days, +11 hours, -9 minutes is normalised to -1 year, 10 months, 6 days,
@@ -1038,9 +1040,9 @@ However, if we add 24 hours, 1 day we end up at 11pm on the next day! Why is thi
 Because midnight + 24 hours = 11pm (there's 25 hours on this day!), then we add 1
 day and end up at 11pm on the following day.
 
-=for html <img src="http://search.cpan.org/src/RICKM/DateTime-Format-Duration-1.0002/docs/figure2.gif">
+=for html <img src="https://raw.githubusercontent.com/karenetheridge/DateTime-Format-Duration/master/docs/figure2.gif">
 
-=for man See: http://search.cpan.org/src/RICKM/DateTime-Format-Duration-1.0002/docs/figure2.gif
+=for man See: https://raw.githubusercontent.com/karenetheridge/DateTime-Format-Duration/master/docs/figure2.gif
 
 Figure 2 illustrates the above problem on timelines.
 
@@ -1052,9 +1054,9 @@ seconds mean there are minutes that are 61 seconds long, thus 130 seconds can
 be 2 minutes, 10 seconds or 2 minutes 9 seconds, depending on the base DateTime.
 Similarly leap years mean a day can have 23, 24 or 25 hours.
 
-=for html <img src="http://search.cpan.org/src/RICKM/DateTime-Format-Duration-1.0002/docs/figure3.gif">
+=for html <img src="https://raw.githubusercontent.com/karenetheridge/DateTime-Format-Duration/master/docs/figure3.gif">
 
-=for man See: http://search.cpan.org/src/RICKM/DateTime-Format-Duration-1.0002/docs/figure3.gif
+=for man See: https://raw.githubusercontent.com/karenetheridge/DateTime-Format-Duration/master/docs/figure3.gif
 
 Figure 3 shows how leaps are calculated on timelines.
 
