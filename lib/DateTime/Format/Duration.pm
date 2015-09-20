@@ -740,14 +740,14 @@ The C<new> constructor takes the following attributes:
 
 =over 4
 
-=item * C<pattern => $string>
+=item * C<< pattern => $string >>
 
 This is a strf type pattern detailing the format of the duration.
 See the L</Patterns> sections below for more information.
 
-=item * C<<normalise => $one_or_zero_or_ISO>>
+=item * C<< normalise => $one_or_zero_or_ISO >>
 
-=item * C<<normalize => $one_or_zero_or_ISO>>
+=item * C<< normalize => $one_or_zero_or_ISO >>
 
 This determines whether durations are 'normalised'. For example, does
 120 seconds become 2 minutes?
@@ -756,7 +756,7 @@ Setting this value to true without also setting a C<base> means we will
 normalise without a base. See the L</Normalising without a base> section
 below.
 
-=item * C<<base => $datetime_object>>
+=item * C<< base => $datetime_object >>
 
 If a base DateTime is given then that is the normalisation date. Setting
 this attribute overrides the above option and sets normalise to true.
@@ -773,7 +773,7 @@ L<DateTime::Format::Duration> has the following methods:
 
 =item * C<format_duration( $datetime_duration_object )>
 
-=item * C<<format_duration( duration => $dt_duration, pattern => $pattern )>>
+=item * C<< format_duration( duration => $dt_duration, pattern => $pattern ) >>
 
 Returns a string representing a L<DateTime::Duration> object in the format set
 by the pattern. If the first form is used, the pattern is taken from the
@@ -781,7 +781,7 @@ object. If the object has no pattern then this method will croak.
 
 =item * C<format_duration_from_deltas( %deltas )>
 
-=item * C<format_duration_from_deltas( %deltas, pattern => $pattern )>
+=item * C<< format_duration_from_deltas( %deltas, pattern => $pattern ) >>
 
 As above, this method returns a string representing a duration in the format
 set by the pattern. However this method takes a hash of values. Permissible
