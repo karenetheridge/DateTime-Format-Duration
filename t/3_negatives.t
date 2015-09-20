@@ -46,7 +46,7 @@ $strf = DateTime::Format::Duration->new(
 			minutes => -9,
 		},
 		diagnostic => 0,
-		expect     => '-0001-10-08 13:09:00',
+		expect     => '-0001-10-05 13:09:00',
 		expect_duration => '-0002-01-22 11:09:00',
 		title           => 'Mixed values with minor and major negatives',
 	},
@@ -82,10 +82,10 @@ $strf = DateTime::Format::Duration->new(
 
 foreach my $test (@tests) {
 	$test->{title} ||= $test->{pattern};
-	$strf->pattern( $test->{pattern} );
+	$strf->set_pattern( $test->{pattern} );
 	$strf->{diagnostic} = 1 if $test->{diagnostic};
 	is( 
-		$strf->format_duration_from_deltas( %{$test->{duration}} ),
+		$strf->format_duration_from_deltas( $test->{duration} ),
 		$test->{expect},
 		$test->{title}
 	) or diag( "Failed on " . $test->{pattern} ) . 
@@ -96,7 +96,8 @@ foreach my $test (@tests) {
 		$test->{expect_duration},
 		$test->{title} . ' as Duration object',
 	) or diag( "Failed on " . $test->{pattern} ) . 
-		diag( "Got: " . Dump( $test->{duration} ));
+		diag( "Got: " . Dump( $test->{duration} )).
+		diag( "Deltas: " . Dump( {DateTime::Duration->new( %{$test->{duration}} )->deltas} ));
 
 	$strf->{diagnostic} = 0;
 }

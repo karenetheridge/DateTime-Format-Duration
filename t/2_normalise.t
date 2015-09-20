@@ -74,7 +74,7 @@ $strf = DateTime::Format::Duration->new(
 foreach my $test (@tests) {
 	$test->{title} ||= $test->{pattern};
 	$test->{expect} ||= $test->{data};
-	$strf->pattern( $test->{pattern} );
+	$strf->set_pattern( $test->{pattern} );
 	$strf->{diagnostic} = 1 if $test->{diag};
 	is( 
 		$strf->format_duration(

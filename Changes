@@ -7,3 +7,17 @@ Revision history for Perl extension DateTime::Format::StrfDuration.
 1.00  Tue Dec 16 00:29:43 2003 (Australia/Melbourne)
 	- initial release to mailing list
 		
+1.0001 Tue Jan  6 20:18:00 2004 (Australia/Melbourne)
+	- second release to mailing list
+		- Support for Leap Seconds
+		- Normalise dramtically overhauled and quickened
+		- Docs said normalise and normalize. Code didn't.
+		- Patterns now allowed outside the object
+		- Parsing and Formatting now available without OO interface
+		- Made pretty pictures for explaining normalisation concepts
+		- Changed example formats to not look like DateTimes
+		- Reworded parts of docs to make things clearer
+		- Added a lot of normalisation tests as that's the most likely
+		  place to get errors!
+		Thanks to Dave Rolsky for most of the above suggestions.
+	

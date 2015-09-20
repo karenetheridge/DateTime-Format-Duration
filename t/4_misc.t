@@ -35,16 +35,16 @@ $strf = DateTime::Format::Duration->new(
 $duration = DateTime::Duration->new( days => 22, hours => 36 );
 is( $strf->format_duration( $duration ), '3', '22 days, 36 hours as integer weeks' );
 
-$strf->pattern('%W');
+$strf->set_pattern('%W');
 is( $strf->format_duration( $duration ), '3.357142857', '22 days, 36 hours as floating weeks' );
 
-$strf->pattern('%j');
+$strf->set_pattern('%j');
 is( $strf->format_duration( $duration ), '23', '22 days, 36 hours as days' );
 
-$strf->pattern('%s');
+$strf->set_pattern('%s');
 is( $strf->format_duration( $duration ), (22*24*60*60) + (36*60*60), '22 days, 36 hours as seconds' );
 
-$strf->pattern('%u');
+$strf->set_pattern('%u');
 is( $strf->format_duration( $duration ), '2', '22 days, 36 hours as days modulus 7' );
 
 

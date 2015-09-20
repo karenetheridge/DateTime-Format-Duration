@@ -1,10 +1,13 @@
 Changes
+DateTime-Format-Duration-1.00.tar.gz
 Makefile.PL
 MANIFEST
 README
 lib/DateTime/Format/Duration.pm
+t/00Pod.t
 t/0_load.t
 t/1_no_normalisation.t
 t/2_normalise.t
 t/3_negatives.t
 t/4_misc.t
+t/5_normalise.t
