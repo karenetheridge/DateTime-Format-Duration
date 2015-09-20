@@ -785,7 +785,7 @@ object. If the object has no pattern then this method will croak.
 =item * C<format_duration_from_deltas( %deltas, pattern => $pattern )>
 
 As above, this method returns a string representing a duration in the format
-set by the pattern. However this method takes a hash of values. Permissable
+set by the pattern. However this method takes a hash of values. Permissible
 hash keys are C<years, months, days, hours, minutes, seconds> and C<nanoseconds>
 as well as C<negative> which, if true, inverses the duration. (C<< years => -1 >> is
 the same as C<< years => 1, negative=>1 >>)
@@ -872,7 +872,7 @@ The number of days.
 
 =item * %F
 
-Equivelent of %Y-%m-%d
+Equivalent of %Y-%m-%d
 
 =item * %H
 
@@ -912,7 +912,7 @@ Nanoseconds - see note on precision at end
 
 =item * %p
 
-Either a '+' or a '-' indicating the positive-ness of the duration
+Either a '+' or a '-' indicating the positiveness of the duration
 
 =item * %P
 
@@ -920,11 +920,11 @@ A '-' for negative durations and nothing for positive durations.
 
 =item * %r
 
-Equivelent of %H:%M:%S
+Equivalent of %H:%M:%S
 
 =item * %R
 
-Equivelent of %H:%M
+Equivalent of %H:%M
 
 =item * %s
 
@@ -940,7 +940,7 @@ A tab character when formatting or any whitespace when parsing
 
 =item * %T
 
-Equivelent of %P%H:%M:%S
+Equivalent of %P%H:%M:%S
 
 =item * %u
 
@@ -982,7 +982,7 @@ should be right padded). 123456789 nanoseconds formatted with %3N would return
 =head2 Normalisation
 
 This module contains a complex method for normalising durations. The method
-ensures that the vslues for all components are as close to zero as possible.
+ensures that the values for all components are as close to zero as possible.
 Rather than returning 68 minutes, it is normalised to 1 hour, 8 minutes.
 
 The complexity comes from three places:
@@ -1051,7 +1051,7 @@ Figure 2 illustrates the above problem on timelines.
 Leap years and seconds further add to the confusion in normalisation. Leap
 seconds mean there are minutes that are 61 seconds long, thus 130 seconds can
 be 2 minutes, 10 seconds or 2 minutes 9 seconds, depending on the base DateTime.
-Simmilarly leap years mean a day can have 23, 24 or 25 hours.
+Similarly leap years mean a day can have 23, 24 or 25 hours.
 
 =for html <img src="http://search.cpan.org/src/RICKM/DateTime-Format-Duration-1.0002/docs/figure3.gif">
 
@@ -1091,7 +1091,7 @@ negative duration (that is, -2 hours, 34 minutes was assumed to be -2 hours,
 -34 minutes).
 
 These extra methods have been left in here firstly for backwards-compatibility
-but also as an added 'syntactic sugar'. Consider these two equivelent
+but also as an added 'syntactic sugar'. Consider these two equivalent
 expressions:
 
     $one = $o->format_duration(
