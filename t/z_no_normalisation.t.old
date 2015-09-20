@@ -11,7 +11,6 @@ $strf = DateTime::Format::Duration->new(
 	pattern => '%F %r',
 );
 
-
 $duration = DateTime::Duration->new( seconds => 59 );
 is( $strf->format_duration( $duration ), '0000-00-00 00:00:59', 'No normalisation needed' );
 
@@ -39,7 +38,6 @@ $strf = DateTime::Format::Duration->new(
 	base => DateTime->new(year=>2003),
 	pattern => '%F %r',
 );
-
 
 $duration = DateTime::Duration->new( seconds => 59 );
 is( $strf->format_duration( $duration ), '0000-00-00 00:00:59', 'No normalisation needed' );

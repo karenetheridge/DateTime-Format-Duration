@@ -27,3 +27,14 @@ Revision history for Perl extension DateTime::Format::Duration.
 		- This release just fixes some doc bugs I should have fixed last night. 
 		  Sorry!
 		  
+1.01 Thu Jan  8 13:19:00 2004 (Australia/Melbourne)
+	- the 'Britney Spears' release (oops I did it again)
+		- Removed reliance on DateTime::Event::DST which doesn't exist!
+			- Thanks David Wheeler and Mike Castle
+		- Reorganised code to make it neater
+		- Created new tests for normalising and parsing
+		- Fixed bugs new tests revealed
+		- Moved old, redundant tests to *.old. 
+		  They should still pass if you want them!
+		  
+		  

@@ -1,14 +1,9 @@
 package DateTime::Format::Duration;
 
 use Params::Validate qw( validate SCALAR OBJECT ARRAYREF HASHREF UNDEF );
-use Carp; #$Carp::CarpInternal{DateTime}++; # Carp should report original caller, not DateTime caller.
+use Carp;
 use DateTime::Duration;
-use DateTime::LeapSecond;
-use DateTime::Event::DST;
 
-Params::Validate::validation_options(
-	on_fail => \&Carp::confess,
-);
 
 use constant MAX_NANOSECONDS => 1000000000;  # 1E9 = almost 32 bits
 use strict;
@@ -18,7 +13,11 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw/strpduration strfduration/;
 our %EXPORT_TAGS = (ALL => [qw/strpduration strfduration/]);
 
-our $VERSION = '1.0002';
+our $VERSION = '1.01';
+
+#---------------------------------------------------------------------------
+# CONSTRUCTORS
+#---------------------------------------------------------------------------
 
 sub new {
 	my $class = shift;
@@ -34,14 +33,11 @@ sub new {
 	
 	return bless \%args, $class;
 }
+	
 
-sub base { croak("No arguments should be passed to base. Use set_base() instead.") if $_[1]; $_[0]->{base} or undef }
-sub set_base {
-	my $self = shift;
-	my $newbase = shift;
-	croak("Argument to set_base() must be a DateTime object.") unless ref($newbase) eq 'DateTime';
-	$self->{base} = $newbase;
-}
+#---------------------------------------------------------------------------
+# SETTERS AND ACCESSORS
+#---------------------------------------------------------------------------
 
 sub pattern { croak("No arguments should be passed to pattern. Use set_pattern() instead.") if $_[1]; $_[0]->{pattern} or undef }
 sub set_pattern {
@@ -49,6 +45,16 @@ sub set_pattern {
 	my $newpattern = shift;
 	$self->{parser} = '';
 	$self->{pattern} = $newpattern;
+	return $self;
+}
+
+sub base { croak("No arguments should be passed to base. Use set_base() instead.") if $_[1]; $_[0]->{base} or undef }
+sub set_base {
+	my $self = shift;
+	my $newbase = shift;
+	croak("Argument to set_base() must be a DateTime object.") unless ref($newbase) eq 'DateTime';
+	$self->{base} = $newbase;
+	return $self;
 }
 
 sub normalising { croak("No arguments should be passed to normalising. Use set_normalising() instead.") if $_[1]; ($_[0]->{normalise}) ? 1 : 0 } 
@@ -57,127 +63,15 @@ sub set_normalising {
 	my $self = shift;
 	my $new = shift;
 	$self->{normalise} = shift;
-	($self->{normalise}) ? 1 : 0;
+	return $self;
 }
 *set_normalizing = \&set_normalising; *set_normalizing = \&set_normalising;
 
 
-sub normalise {
-	my $self = shift;
-	
-	unless ($self->base) { return $self->normalise_no_base(@_) }
-	
-	my %delta = (ref($_[0]) =~/^DateTime::Duration/)
-		? $_[0]->deltas
-		: @_;
-		
-	return %delta unless $self->{normalise}; #TODO: move to calling function
-	
-	if (delete $delta{negative}) {
-		foreach (keys %delta) { $delta{$_} *= -1 }
-	}
-	
-	
-	
-	if ($self->{diagnostic}) {require Data::Dumper; print 'Pre Normalise: ' . Data::Dumper::Dumper( \%delta );}	
+#---------------------------------------------------------------------------
+# DATA
+#---------------------------------------------------------------------------
 
-	my $start = $self->base;
-	my $end   = $self->base->clone;
-	# Can't add the hash as ->add(%delta) because of mixed positivity:
-	
-	foreach (qw/years months days hours minutes seconds nanoseconds/) { 
-		$end->add( $_ => $delta{$_}||0 );
-	 	print "Adding $delta{$_} $_: " . $end->datetime . "\n" if $self->{diagnostic}; 
-	}
-	
-		
-	my %new_delta = ($end - $start)->deltas;
-
-	if ($self->{diagnostic}) {require Data::Dumper; print 'Post DateTime::Duration: ' . Data::Dumper::Dumper( \%new_delta );}	
-	
-	
-	# Get hours from minutes:
-	$new_delta{hours} = int($new_delta{minutes} / 60);
-	$new_delta{minutes} = ($new_delta{minutes} < 0) 
-		? $new_delta{minutes} % -60
-		: $new_delta{minutes} % 60;
-	
-	# Get years from months:
-	$new_delta{years} = int($new_delta{months} / 12);
-	$new_delta{months} = ($new_delta{months} < 0) 
-		? $new_delta{months} % -12
-		: $new_delta{months} % 12;
-	
-	if ($self->{diagnostic}) {require Data::Dumper; print 'Post Extraction: ' . Data::Dumper::Dumper( \%new_delta );}	
-	
-	foreach(qw/years months days hours minutes seconds nanoseconds/) {
-		if ($new_delta{$_} < 0) {
-			$new_delta{negative} = 1;
-			$new_delta{$_} *= -1 
-		}
-		$new_delta{$_} ||= 0;
-	}
-	
-	if ($self->{diagnostic}) {require Data::Dumper; print 'Post Normalisation: ' . Data::Dumper::Dumper( \%new_delta );}	
-	
-	return %new_delta
-}
-
-sub normalise_no_base {
-	my $self = shift;
-	
-	my %delta = (ref($_[0]) =~/^DateTime::Duration/)
-		? $_[0]->deltas
-		: @_;
-		
-	return %delta unless $self->{normalise}; #TODO: move to calling function
-	
-	if (delete $delta{negative}) {
-		foreach (keys %delta) { $delta{$_} *= -1 }
-	}
-	
-	if ($self->{diagnostic}) {require Data::Dumper; print 'Pre Baseless Normalise: ' . Data::Dumper::Dumper( \%delta );}	
-	
-	$delta{seconds} += int($delta{nanoseconds} / MAX_NANOSECONDS);
-	$delta{nanoseconds} = ($delta{nanoseconds} > 0)
-		? $delta{nanoseconds} %  MAX_NANOSECONDS
-		: $delta{nanoseconds} % -&MAX_NANOSECONDS;
-		
-	$delta{minutes} += int($delta{seconds} / 60);
-	$delta{seconds} = ($delta{seconds} > 0)
-		? $delta{seconds} %  60
-		: $delta{seconds} % -60;
-		
-	$delta{hours} += int($delta{minutes} / 60);
-	$delta{minutes} = ($delta{minutes} > 0)
-		? $delta{minutes} %  60
-		: $delta{minutes} % -60;
-		
-	$delta{days} += int($delta{hours} / 24);
-	$delta{hours} = ($delta{hours} > 0)
-		? $delta{hours} %  24
-		: $delta{hours} % -24;
-		
-	$delta{years} += int($delta{months} / 12);
-	$delta{months} = ($delta{months} > 0)
-		? $delta{months} %  12
-		: $delta{months} % -12;
-	
-	foreach(qw/years months days hours minutes seconds nanoseconds/) {
-		if ($delta{$_} < 0) {
-			$delta{negative} = 1;
-			$delta{$_} *= -1 
-		}
-		$delta{$_} ||= 0;
-	}
-	
-	if ($self->{diagnostic}) {require Data::Dumper; print 'Post Baseless Normalise: ' . Data::Dumper::Dumper( \%delta );}	
-	
-	return %delta;
-}
-
-*normalize = \&normalise;
-*normalize = \&normalise;
 
 my %formats =
     ( 'C' => sub { int( $_[0]->{years} / 100 ) },
@@ -209,6 +103,11 @@ my %formats =
       '%' => sub { '%' },
     );
 
+
+#---------------------------------------------------------------------------
+# METHODS
+#---------------------------------------------------------------------------
+	
 sub format_duration {
     my $self = shift;
 	
@@ -227,7 +126,6 @@ sub format_duration {
 		@formats = ref($args{pattern}) ? @{$args{pattern}} : ($args{pattern});
 	}
 	
-	#use Data::Dumper;
 	croak("No formats defined") unless @formats;
 	
 	my %duration = ($self->normalising) 
@@ -303,8 +201,6 @@ sub parse_duration {
 sub parse_duration_as_deltas {
     my ( $self, $time_string ) = @_;
 	
-	@{$self->{caller}} = caller;
-	
 	local $^W = undef;
 
 	# Variables from the parser
@@ -323,25 +219,6 @@ sub parse_duration_as_deltas {
 	eval($parser);
 	die "Parser ($parser) died:$@" if $@;
 	
-	if ($self->{diagnostic}) {
-		print qq|
-		
-Entered     = $time_string
-Parser		= $parser
-		
-centuries   = $centuries
-years		= $years
-months		= $months
-weeks		= $weeks
-days		= $days
-hours		= $hours
-minutes		= $minutes
-seconds		= $seconds
-nanoseconds = $nanoseconds
-		|;
-	
-	}
-
 	$years += ($centuries * 100);
 	$days  += ($weeks     * 7  );
 	
@@ -357,48 +234,218 @@ nanoseconds = $nanoseconds
 
 }
 
+
+#---------------------------------------------------------------------------
+# UTILITY FUNCTIONS
+#---------------------------------------------------------------------------
+
+sub normalise {
+	my $self = shift;
+	
+	return $self->normalise_no_base(@_) if ($self->{normalising} =~ /^ISO$/i or not $self->base);
+	
+	my %delta = (ref($_[0]) =~/^DateTime::Duration/)
+		? $_[0]->deltas
+		: @_;
+	
+	if (delete $delta{negative}) {
+		foreach (keys %delta) { $delta{$_} *= -1 }
+	}
+	
+	
+	
+	if ($self->{diagnostic}) {require Data::Dumper; print 'Pre Normalise: ' . Data::Dumper::Dumper( \%delta );}	
+
+	my $start = $self->base;
+	my $end   = $self->base->clone;
+	# Can't just add the hash as ->add(%delta) because of mixed positivity:
+	foreach (qw/years months days hours minutes seconds nanoseconds/) { 
+		$end->add( $_ => $delta{$_}||0 );
+	 	print "Adding $delta{$_} $_: " . $end->datetime . "\n" if $self->{diagnostic}; 
+	}
+	
+	my %new_delta = ($end - $start)->deltas;
+
+	if ($self->{diagnostic}) {require Data::Dumper; print 'Post DateTime::Duration: ' . Data::Dumper::Dumper( \%new_delta );}	
+	
+	
+	# Get hours from minutes:
+	($new_delta{minutes}, $new_delta{hours}) = _set_max($new_delta{minutes}, 60, $new_delta{hours}||0  );
+	
+	# Get years from months:
+	($new_delta{months}, $new_delta{years}) = _set_max($new_delta{months}, 12, $new_delta{years}||0  );
+	
+	if ($self->{diagnostic}) {require Data::Dumper; print 'Post Extraction: ' . Data::Dumper::Dumper( \%new_delta );}	
+	
+	my ($negatives, $positives);
+	foreach(qw/years months days hours minutes seconds nanoseconds/) {
+		if ($new_delta{$_} < 0) {
+			$negatives++;
+		} elsif ($new_delta{$_} > 0) {
+			$positives++;
+		} # ignore == 0
+	}
+	if ($negatives and not $positives) {
+		foreach(qw/years months days hours minutes seconds nanoseconds/) {
+			if ($new_delta{$_} < 0) {
+				$new_delta{$_} *= -1 
+			}
+			$new_delta{$_} ||= 0;
+		}
+		$new_delta{negative} = 1;
+	}
+	
+	if ($self->{diagnostic}) {require Data::Dumper; print 'Post Normalisation: ' . Data::Dumper::Dumper( \%new_delta );}	
+	
+	return %new_delta
+}
+*normalize = \&normalise;
+*normalize = \&normalise;
+
+sub normalise_no_base {
+	my $self = shift;
+	my %delta = (ref($_[0]) =~/^DateTime::Duration/) ? $_[0]->deltas : @_;
+
+	if (delete $delta{negative}) { 
+		foreach (keys %delta) { $delta{$_} *= -1 }
+	}
+	
+	if ($self->{diagnostic}) {
+		require Data::Dumper; 
+		print 'Pre Baseless Normalise: ' . Data::Dumper::Dumper( \%delta );
+	}	
+	
+	# Remove any decimals:
+	$delta{nanoseconds} += (MAX_NANOSECONDS * ($delta{seconds} - int($delta{seconds})));
+	$delta{seconds} = int($delta{seconds});
+	$delta{seconds} += (60 * ($delta{minutes} - int($delta{minutes})));
+	$delta{minutes} = int($delta{minutes});
+	$delta{minutes} += (60 * ($delta{hours} - int($delta{hours})));
+	$delta{hours} = int($delta{hours});
+	$delta{hours} += (24 * ($delta{days} - int($delta{days})));
+	$delta{days} = int($delta{days});
+	$delta{days} += (30 * ($delta{months} - int($delta{months})));
+	$delta{months} = int($delta{months});
+	
+	($delta{nanoseconds}, $delta{seconds})  = _set_max($delta{nanoseconds}, MAX_NANOSECONDS, $delta{seconds});
+	($delta{seconds},     $delta{minutes})  = _set_max($delta{seconds},     60,              $delta{minutes});
+	($delta{minutes},     $delta{hours})    = _set_max($delta{minutes},     60,              $delta{hours}  );
+	($delta{hours},       $delta{days})     = _set_max($delta{hours},       24,              $delta{days}   );
+	($delta{days},        $delta{months})   = _set_max($delta{days},        30,              $delta{months} ) 
+		if $self->{normalise} =~ /^iso$/i;
+	($delta{months},      $delta{years})    = _set_max($delta{months},      12,              $delta{years}  );
+	
+	if ($self->{diagnostic}) {
+		require Data::Dumper;
+		print 'Post Baseless Normalise: ' . Data::Dumper::Dumper( \%delta );
+	}	
+	
+	%delta = _denegate( %delta );
+
+	if ($self->{diagnostic}) {
+		require Data::Dumper;
+		print 'Post Denegation: ' . Data::Dumper::Dumper( \%delta );
+	}	
+	
+	return %delta;
+}
+*normalize_no_base = \&normalise_no_base;
+*normalize_no_base = \&normalise_no_base;
+
 sub as_weeks {
 	my $self = shift;	
-
-	my %deltas = %{$_[0]};
-	
-	return int($deltas{days} / 7) unless $self and $self->base;
-	
-	my $negate = delete $deltas{negative};
-	if ($negate) {foreach( keys %deltas ) { $deltas{$_} *= -1 }};
-	
-	my $dt1 = $self->base + DateTime::Duration->new( %deltas );
-	return int(($dt1->{utc_rd_days} - $self->base->{utc_rd_days})/7);
+	return int($self->as_seconds($_[0]) / (7*24*60*60));
 }
 
 sub as_days {
 	my $self = shift;	
-
-	my %deltas = %{$_[0]};
-	
-	return int($deltas{days}) unless $self and $self->base;
-	
-	my $negate = delete $deltas{negative};
-	if ($negate) {foreach( keys %deltas ) { $deltas{$_} *= -1 }};
-	
-	my $dt1 = $self->base + DateTime::Duration->new( %deltas );
-	return ($dt1->{utc_rd_days} - $self->base->{utc_rd_days});
+	return int($self->as_seconds($_[0]) / (24*60*60));
 }
 
 sub as_seconds {
 	my $self = shift;	
 
-	my %deltas = %{$_[0]};
+	my %delta = (ref($_[0])) ? %{$_[0]} : @_;
+	if (delete $delta{negative}) {foreach( keys %delta ) { $delta{$_} *= -1 }};
 	
-	return int($deltas{days} * (24*60*60)) unless $self and $self->base;
-	
-	my $negate = delete $deltas{negative};
-	if ($negate) {foreach( keys %deltas ) { $deltas{$_} *= -1 }};
-	
-	my $dt1 = $self->base + DateTime::Duration->new( %deltas );
+	unless ($self->base) {
+		my $seconds = $delta{nanoseconds} / MAX_NANOSECONDS;
+		$seconds += $delta{seconds};
+		$seconds += $delta{minutes} * 60;
+		$seconds += $delta{hours}   * (60*60);
+		$seconds += $delta{days}    * (24*60*60);
+		$seconds += $delta{months}  * (30*24*60*60);
+		$seconds += $delta{years}   * (12*30*24*60*60);
+		return $seconds;
+	}
+
+	my $dt1 = $self->base + DateTime::Duration->new( %delta );
 	return int(($dt1->{utc_rd_days} - $self->base->{utc_rd_days}) * (24*60*60)) 
 			+ ($dt1->{utc_rd_secs} - $self->base->{utc_rd_secs});
 }
+
+
+sub debug_level{
+	my $self = shift;
+	my $level = shift;
+	if ($level > 0) {
+		Params::Validate::validation_options(
+			on_fail => \&Carp::confess,
+		);
+	} else {
+		Params::Validate::validation_options(
+			on_fail => undef,
+		);
+	}
+	$self->{diagnostic} = ($level) ? $level-1 : 0;
+}
+
+
+
+#---------------------------------------------------------------------------
+# EXPORTABLE FUNCTIONS
+#---------------------------------------------------------------------------
+
+sub strfduration { #format
+	my %args = validate( @_, {
+		pattern		=> { type => SCALAR | ARRAYREF },
+		duration	=> { type => OBJECT },
+		normalise	=> { type => SCALAR, optional => 1 },
+		base		=> { type => OBJECT, optional => 1 },
+		debug		=> { type => SCALAR, default => 0 },
+	});
+	my $new = DateTime::Format::Duration->new(
+		pattern => $args{pattern},
+		base    => $args{base},
+		normalise=> $args{normalise},
+	);
+	$new->debug_level( $args{debug } );
+	return $new->format_duration( $args{duration} );
+}
+
+sub strpduration { #parse
+	my %args = validate( @_, {
+		pattern		=> { type => SCALAR | ARRAYREF },
+		duration	=> { type => SCALAR },
+		base		=> { type => OBJECT, optional => 1 },
+		as_deltas	=> { type => SCALAR, default => 0 },
+		debug		=> { type => SCALAR, default => 0 },
+	});
+	my $new = DateTime::Format::Duration->new(
+		pattern => $args{pattern},
+		base    => $args{base},
+	);
+	$new->debug_level( $args{debug} );
+	return $new->parse_duration( $args{duration} ) unless $args{as_deltas};
+
+	return $new->parse_duration_as_deltas( $args{duration} );
+}
+
+
+
+#---------------------------------------------------------------------------
+# INTERNAL FUNCTIONS
+#---------------------------------------------------------------------------
 
 sub _format_nanosecs {
 	my %deltas = %{+shift};
@@ -448,8 +495,8 @@ sub _build_parser {
 	$field_list =~ s/%(\d*)[C]/#centuries#/g;
 	
 	# Years:
-	$regex =~ s/%(\d*)[Y]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
-	$field_list =~ s/%(\d*)[Y]/#years#/g;
+	$regex =~ s/%(\d*)[Yy]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
+	$field_list =~ s/%(\d*)[Yy]/#years#/g;
 	
 	# Months:
 	$regex =~ s/%(\d*)[m]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
@@ -458,10 +505,12 @@ sub _build_parser {
 	# Weeks:
 	$regex =~ s/%(\d*)[GV]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
 	$field_list =~ s/%(\d*)[GV]/#weeks#/g;
+	$regex =~ s/%\d*[W]/" *([+-]?\\d+\\.?\\d*)"/eg;
+	$field_list =~ s/%\d*[W]/#weeks#/g;
 	
 	# Days:
-	$regex =~ s/%(\d*)[dejuy]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
-	$field_list =~ s/%(\d*)[dejuy]/#days#/g;
+	$regex =~ s/%(\d*)[deju]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
+	$field_list =~ s/%(\d*)[deju]/#days#/g;
 	
 	# Hours:
 	$regex =~ s/%(\d*)[HIkl]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
@@ -483,6 +532,10 @@ sub _build_parser {
 	# Any function in DateTime.
 	$regex =~ s|%{(\w+)}|($tempdur->can($1)) ? "(.+)" : ".+"|eg;
 	$field_list =~ s|(%{(\w+)})|($tempdur->can($2)) ? "#$2#" : $1 |eg;
+	
+	# White space:
+	$regex =~ s/%(\d*)[tn]/($1) ? "\s{$1}" : "\s+"/eg;
+	$field_list =~ s/%(\d*)[tn]//g;
 
 	# is replaced by %.
 	$regex =~ s/%%/%/g;
@@ -496,52 +549,70 @@ sub _build_parser {
 	$self->{parser} = qq|($field_list) = \$time_string =~ /$regex/|;
 }
 
-sub _minute_length {
-	my $dt = shift;
-	#print $dt->datetime . ': ' if $self->{diagnostic} >= 2;
-	my $return = ($dt->hour == 23 and $dt->minute == 59) 
-		? DateTime::LeapSecond::day_length( ($dt->utc_rd_values)[0] ) - 86400 + 60
-		: 60;
-	#print $return . "\n" if $self->{diagnostic} >= 2;
-	$return;
+sub _set_max {
+	#$$_[0] should roll over to the next $$_[2] when it reaches $_[1]
+	#seconds should roll over to the next minute when it reaches 60.
+	my ($small, $max, $large) = @_;
+	#warn "$small should roll over to the next $large when it reaches $max\n";
+	$large += int($small / $max);
+	$small = ($small < 0)
+		? $small %  -$max
+		: $small % $max;
+	return ($small, $large);
 }
 
-
-# exportable functions
-
-
-sub strfduration { #format
-	my %args = validate( @_, {
-		pattern		=> { type => SCALAR | ARRAYREF },
-		duration	=> { type => OBJECT },
-		normalise	=> { type => SCALAR, optional => 1 },
-		base		=> { type => OBJECT, optional => 1 },
-	});
-	DateTime::Format::Duration
-		->new(
-			pattern => $args{pattern},
-			base    => $args{base},
-			normalise=> $args{normalise},
-		)
-		->format_duration(
-			$args{duration}
-		);
+sub _denegate {
+	my %delta = @_;
+	my ($negatives, $positives);
+	foreach(qw/years months days hours minutes seconds nanoseconds/) {
+		if ($delta{$_} < 0) {
+			$negatives++;
+		} elsif ($delta{$_} > 0) {
+			$positives++;
+		} # ignore == 0
+	}
+	if ($negatives and not $positives) {
+		foreach(qw/years months days hours minutes seconds nanoseconds/) {
+			if ($delta{$_} < 0) {
+				$delta{$_} *= -1 
+			}
+			$delta{$_} ||= 0;
+		}
+		$delta{negative} = 1;
+	} elsif ($negatives and $positives) {
+		# Work to match largest component
+		my $make = '';
+		foreach(qw/years months days hours minutes seconds nanoseconds/) {
+			if ($delta{$_} < 0) {
+				$make = 'negative';
+				last;
+			} elsif ($delta{$_} > 0) {
+				$make = 'positive';
+				last;
+			}
+		}
+		if ($make) {
+			($delta{seconds}, $delta{minutes}) = _make($make,$delta{seconds}, 60, $delta{minutes});
+			($delta{minutes}, $delta{hours})   = _make($make,$delta{minutes}, 60, $delta{hours}  );
+			($delta{hours},   $delta{days})    = _make($make,$delta{hours},   24, $delta{days}   );
+			($delta{months},  $delta{years})   = _make($make,$delta{months},  12, $delta{years}  );
+			%delta = _denegate(%delta);
+		}
+	}
+	return %delta
 }
 
-sub strpduration { #parse
-	my %args = validate( @_, {
-		pattern		=> { type => SCALAR | ARRAYREF },
-		duration	=> { type => SCALAR },
-		base		=> { type => OBJECT, optional => 1 },
-	});
-	DateTime::Format::Duration
-		->new(
-			pattern => $args{pattern},
-			base    => $args{base},
-		)
-		->parse_duration(
-			$args{duration}
-		);
+sub _make {
+	my ($make, $small, $max, $large) = @_;
+	while ($small < 0 and $make eq 'positive') {
+		$small += $max;
+		$large -= 1;
+	}
+	while ($small > 0 and $make eq 'negative') {
+		$small -= $max;
+		$large += 1;
+	}
+	return ($small, $large);
 }
 
 1;
@@ -609,26 +680,29 @@ This module contains a single constructor:
 
 =over 4
 
-=item * new( ... )
+=item * C<new( ... )>
 
 The C<new> constructor takes the following attributes:
 
 =over 4
 
-=item * pattern => $string
+=item * C<pattern => $string>
 
 This is a strf type pattern detailing the format of the duration.
-See the L</PATTERNS> sections below for more information.
+See the L</Patterns> sections below for more information.
 
-=item * normalise => $one_or_zero
+=item * C<normalise => $one_or_zero_or_ISO>
 
-=item * normalize => $one_or_zero
+=item * C<normalize => $one_or_zero_or_ISO>
 
 This determines whether durations are 'normalised'. For example, does 
-120 seconds become 2 minutes? For more information on this option see
-the L</NORMALISE> section below. 
+120 seconds become 2 minutes? 
 
-=item * base => $datetime_object
+Setting this value to true without also setting a C<base> means we will
+normalise without a base. See the L</Normalising without a base> section
+below.
+
+=item * C<base => $datetime_object>
 
 If a base DateTime is given then that is the normalisation date. Setting
 this attribute overrides the above option and sets normalise to true.
@@ -643,17 +717,17 @@ L<DateTime::Format::Duration> has the following methods:
 
 =over 4
 
-=item * format_duration( $datetime_duration_object )
+=item * C<format_duration( $datetime_duration_object )>
 
-=item * format_duration( duration => $dt_duration, pattern => $pattern )
+=item * C<format_duration( duration => $dt_duration, pattern => $pattern )>
 
 Returns a string representing a L<DateTime::Duration> object in the format set 
 by the pattern. If the first form is used, the pattern is taken from the 
 object. If the object has no pattern then this method will croak.
 
-=item * format_duration_from_deltas( %deltas )
+=item * C<format_duration_from_deltas( %deltas )>
 
-=item * format_duration_from_deltas( %deltas, pattern => $pattern )
+=item * C<format_duration_from_deltas( %deltas, pattern => $pattern )>
 
 As above, this method returns a string representing a duration in the format
 set by the pattern. However this method takes a hash of values. Permissable
@@ -661,19 +735,19 @@ hash keys are C<years, months, days, hours, minutes, seconds> and C<nanoseconds>
 as well as C<negative> which, if true, inverses the duration. (C<< years => -1 >> is
 the same as C<< years => 1, negative=>1 >>)
 
-=item * parse_duration( $string )
+=item * C<parse_duration( $string )>
 
 This method takes a string and returns a L<DateTime::Duration> object that is the
 equivalent according to the pattern.
 
-=item * parse_duration_as_deltas( $string )
+=item * C<parse_duration_as_deltas( $string )>
 
 Once again, this method is the same as above, however it returns a hash rather
 than an object.
 
-=item * normalise( $duration_object )
+=item * C<normalise( $duration_object )>
 
-=item * normalize( %deltas )
+=item * C<normalize( %deltas )>
 
 Returns a hash of deltas after normalising the input. See the L</NORMALISE>
 section below for more information.
@@ -684,15 +758,15 @@ section below for more information.
 
 =over 4
 
-=item * pattern()
+=item * C<pattern()>
 
 Returns the current pattern.
 
-=item * base()
+=item * C<base()>
 
 Returns the current base.
 
-=item * normalising()
+=item * C<normalising()>
 
 Indicates whether or not the durations are being normalised.
 
@@ -704,23 +778,25 @@ All setters return the object so that they can be strung together.
 
 =over 4
 
-=item * set_pattern( $new_pattern )
+=item * C<set_pattern( $new_pattern )>
 
 Sets the pattern and returns the object.
 
-=item * set_base( $new_DateTime )
+=item * C<set_base( $new_DateTime )>
 
 Sets the base L<DateTime> and returns the object.
 
-=item * set_normalising( $true_or_false )
+=item * C<set_normalising( $true_or_false_or_ISO )>
 
 Turns normalising on or off and returns the object.
 
 =back
 
-=head1 PATTERNS
+=head1 NOTES
 
-This module uses a similar set of patterns to L<strftime(3)>. These patterns
+=head2 Patterns
+
+This module uses a similar set of patterns to L<strftime|strftime(3)>. These patterns
 have been kept as close as possible to the original time-based patterns.
 
 =over 4
@@ -848,7 +924,7 @@ Nanosecond precision is the other way (nanoseconds are fractional and thus
 should be right padded). 123456789 nanoseconds formatted with %3N would return 
 123 and formatted as %12N would return 123456789000.
 
-=head1 NORMALISE
+=head2 Normalisation
 
 This module contains a complex method for normalising durations. The method
 ensures that the vslues for all components are as close to zero as possible. 
@@ -915,11 +991,12 @@ day and end up at 11pm on the following day.
 Figure 2 illustrates the above problem on timelines.
 
 
-=item * Leap seconds
+=item * Leap years and leap seconds
 
-Leap seconds further add to the confusion in normalisation. Leap seconds mean there
-are minutes that are 61 seconds long, thus 130 seconds can be 2 minutes, 10 seconds
-or 2 minutes 9 seconds, depending on the base DateTime
+Leap years and seconds further add to the confusion in normalisation. Leap 
+seconds mean there are minutes that are 61 seconds long, thus 130 seconds can 
+be 2 minutes, 10 seconds or 2 minutes 9 seconds, depending on the base DateTime.
+Simmilarly leap years mean a day can have 23, 24 or 25 hours.
 
 =for html <img src="http://search.cpan.org/src/RICKM/DateTime-Format-Duration-1.0002/docs/figure3.gif">
 
@@ -929,15 +1006,28 @@ Figure 3 shows how leaps are calculated on timelines.
 
 =back
 
-=head1 NORMALISING WITHOUT A BASE
+=head2 Normalising without a base
 
-It is possible to normalise without a base DateTime, however the results should not
-be used for anything critical. Without a base, 45 days will stay as 45 days as there
-is no way to accurately convert to months. However
-the following assumptions will be made: There are 24 hours in a day and there are 
-60 seconds in a minute.
+This module includes two ways to normalise without a base.
 
-=head1 DELTAS vs DURATION OBJECTS
+=over 4
+
+=item * Standard Normalisation
+
+Using standard normalisation without a base, 45 days will stay as 45 days as there
+is no way to accurately convert to months. However the following assumptions will 
+be made: There are 24 hours in a day and there are 60 seconds in a minute.
+
+=item * ISO Normalisation
+
+In ISO8601v2000, Section 5.5.3.2 says that "The values used must not exceed the 
+'carry-over points' of 12 months, 30 days, 24 hours, 60 minutes and 60 seconds".
+Thus if you set the normalise option of the constructor, or use set_normalising
+to 'ISO', months will be normalised to 30 days.
+
+=back
+
+=head2 Deltas vs Duration Objects
 
 This module can bypass duration objects and just work with delta hashes. This
 is of use for durations that contains mixed positive and negative components. 
