@@ -1,12 +1,41 @@
 Revision history for Perl extension DateTime::Format::Duration.
 
-0.00  Sun Nov  9 18:39:56 2003
-	- original version; created by h2xs 1.22 with options
-		-X -v1.00 --use-new-tests -b5.0.5 -nDateTime::Format::StrfDuration
+1.03 2007-06-01
+	- the Björn Again release
+		- This has been a looooong time coming, and I've only just
+		  managed to get off my arse and fix it thanks to Björn
+		  Tackmann.
+		- Fixed test 41 was incorrect.
+		- All other tests were correct, but as date math had changed,
+		  we needed to refactor the normalisation
+		- Updated DateTime requirement to 0.30 -- the new math
 
-1.00  Tue Dec 16 00:29:43 2003 (Australia/Melbourne)
-	- Changed name to DateTime::Format::Duration
-	- initial release to mailing list
+1.02 2004-04-04
+	- the 'Mixed Components' release
+		- DateTime::Duration now accepts mixed components so the need
+		  to handle them differently has been removed. Old methods
+		  remain in place though. See the POD.
+
+1.0101 2004-01-09T02:28:00Z
+	- the 'anonymous tester' release
+		- added 'use warnings'
+		- fixed a missing escape on the whitespace parser
+			- thanks to fairly anonymous CPAN tester!
+
+1.01 Thu Jan  8 13:19:00 2004 (Australia/Melbourne)
+	- the 'Britney Spears' release (oops I did it again)
+		- Removed reliance on DateTime::Event::DST which doesn't exist!
+			- Thanks David Wheeler and Mike Castle
+		- Reorganised code to make it neater
+		- Created new tests for normalising and parsing
+		- Fixed bugs new tests revealed
+		- Moved old, redundant tests to *.old.
+		  They should still pass if you want them!
+
+1.0002 Wed Jan  7 23:35:00 2004 (Australia/Melbourne)
+	- quiet release to cpan
+		- This release just fixes some doc bugs I should have fixed last night.
+		  Sorry!
 
 1.0001 Tue Jan  6 20:18:00 2004 (Australia/Melbourne)
 	- second release to mailing list
@@ -22,39 +51,10 @@ Revision history for Perl extension DateTime::Format::Duration.
 		  place to get errors!
 		Thanks to Dave Rolsky for most of the above suggestions.
 
-1.0002 Wed Jan  7 23:35:00 2004 (Australia/Melbourne)
-	- quiet release to cpan
-		- This release just fixes some doc bugs I should have fixed last night.
-		  Sorry!
+1.00  Tue Dec 16 00:29:43 2003 (Australia/Melbourne)
+	- Changed name to DateTime::Format::Duration
+	- initial release to mailing list
 
-1.01 Thu Jan  8 13:19:00 2004 (Australia/Melbourne)
-	- the 'Britney Spears' release (oops I did it again)
-		- Removed reliance on DateTime::Event::DST which doesn't exist!
-			- Thanks David Wheeler and Mike Castle
-		- Reorganised code to make it neater
-		- Created new tests for normalising and parsing
-		- Fixed bugs new tests revealed
-		- Moved old, redundant tests to *.old.
-		  They should still pass if you want them!
-
-1.0101 2004-01-09T02:28:00Z
-	- the 'anonymous tester' release
-		- added 'use warnings'
-		- fixed a missing escape on the whitespace parser
-			- thanks to fairly anonymous CPAN tester!
-
-1.02 2004-04-04
-	- the 'Mixed Components' release
-		- DateTime::Duration now accepts mixed components so the need
-		  to handle them differently has been removed. Old methods
-		  remain in place though. See the POD.
-
-1.03 2007-06-01
-	- the Björn Again release
-		- This has been a looooong time coming, and I've only just
-		  managed to get off my arse and fix it thanks to Björn
-		  Tackmann.
-		- Fixed test 41 was incorrect.
-		- All other tests were correct, but as date math had changed,
-		  we needed to refactor the normalisation
-		- Updated DateTime requirement to 0.30 -- the new math
+0.00  Sun Nov  9 18:39:56 2003
+	- original version; created by h2xs 1.22 with options
+		-X -v1.00 --use-new-tests -b5.0.5 -nDateTime::Format::StrfDuration
