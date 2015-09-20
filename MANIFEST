@@ -1,8 +1,10 @@
 Changes
-DateTime-Format-Duration-1.00.tar.gz
 Makefile.PL
 MANIFEST
 README
+docs/figure1.gif
+docs/figure2.gif
+docs/figure3.gif
 lib/DateTime/Format/Duration.pm
 t/00Pod.t
 t/0_load.t

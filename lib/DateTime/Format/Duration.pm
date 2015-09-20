@@ -18,7 +18,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw/strpduration strfduration/;
 our %EXPORT_TAGS = (ALL => [qw/strpduration strfduration/]);
 
-our $VERSION = '1.0001';
+our $VERSION = '1.0002';
 
 sub new {
 	my $class = shift;
@@ -550,7 +550,7 @@ __END__
 
 =head1 NAME
 
-DateTime::Format::Duration - Duration objects for date math
+DateTime::Format::Duration - Format and parse DateTime::Durations
 
 =head1 SYNOPSIS
 
@@ -874,9 +874,9 @@ place:
 	2001-02-22T00:00:00 + 11 hours = 2001-02-23T11:00:00 === -1y, 10m, 6d, 13h 
 	2001-02-22T11:00:00 - 9 minutes = 2001-02-23T10:51:00 === -1y, 10m, 6d, 13h, 9m 
 
-=for html <img src="http://datetime.perl.org/modules/DateTime-Format-Duration/figure1.gif">
+=for html <img src="http://search.cpan.org/src/RICKM/DateTime-Format-Duration-1.0002/docs/figure1.gif">
 
-=for man See: http://datetime.perl.org/modules/DateTime-Format-Duration/figure1.gif
+=for man See: hhttp://search.cpan.org/src/RICKM/DateTime-Format-Duration-1.0002/docs/figure1.gif
 
 Figure 1 illustrates that, with the given base, -2 years, +1 month,
 +22 days, +11 hours, -9 minutes is normalised to -1 year, 10 months, 6 days,
@@ -908,9 +908,9 @@ However, if we add 24 hours, 1 day we end up at 11pm on the next day! Why is thi
 Because midnight + 24 hours = 11pm (there's 25 hours on this day!), then we add 1 
 day and end up at 11pm on the following day.
 
-=for html <img src="http://datetime.perl.org/modules/DateTime-Format-Duration/figure2.gif">
+=for html <img src="http://search.cpan.org/src/RICKM/DateTime-Format-Duration-1.0002/docs/figure2.gif">
 
-=for man See: http://datetime.perl.org/modules/DateTime-Format-Duration/figure2.gif
+=for man See: http://search.cpan.org/src/RICKM/DateTime-Format-Duration-1.0002/docs/figure2.gif
 
 Figure 2 illustrates the above problem on timelines.
 
@@ -921,9 +921,9 @@ Leap seconds further add to the confusion in normalisation. Leap seconds mean th
 are minutes that are 61 seconds long, thus 130 seconds can be 2 minutes, 10 seconds
 or 2 minutes 9 seconds, depending on the base DateTime
 
-=for html <img src="http://datetime.perl.org/modules/DateTime-Format-Duration/figure3.gif">
+=for html <img src="http://search.cpan.org/src/RICKM/DateTime-Format-Duration-1.0002/docs/figure3.gif">
 
-=for man See: http://datetime.perl.org/modules/DateTime-Format-Duration/figure3.gif
+=for man See: http://search.cpan.org/src/RICKM/DateTime-Format-Duration-1.0002/docs/figure3.gif
 
 Figure 3 shows how leaps are calculated on timelines.
 
