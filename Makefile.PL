@@ -1,6 +1,9 @@
 use 5.00005;
 use ExtUtils::MakeMaker;
 
+print "PLEASE NOTE:";
+
+
 WriteMakefile(
     'NAME'		=> 'DateTime::Format::Duration',
     'VERSION_FROM'	=> 'lib/DateTime/Format/Duration.pm',

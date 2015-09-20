@@ -13,7 +13,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw/strpduration strfduration/;
 our %EXPORT_TAGS = (ALL => [qw/strpduration strfduration/]);
 
-our $VERSION = '1.01';
+our $VERSION = '1.0101';
 
 #---------------------------------------------------------------------------
 # CONSTRUCTORS
@@ -242,7 +242,11 @@ sub parse_duration_as_deltas {
 sub normalise {
 	my $self = shift;
 	
-	return $self->normalise_no_base(@_) if ($self->{normalising} =~ /^ISO$/i or not $self->base);
+	return $self->normalise_no_base(@_) 
+		if (
+			($self->{normalising} and $self->{normalising} =~ /^ISO$/i) 
+			or not $self->base
+		);
 	
 	my %delta = (ref($_[0]) =~/^DateTime::Duration/)
 		? $_[0]->deltas
@@ -308,6 +312,9 @@ sub normalise_no_base {
 
 	if (delete $delta{negative}) { 
 		foreach (keys %delta) { $delta{$_} *= -1 }
+	}
+	foreach(qw/years months days hours minutes seconds nanoseconds/) {
+		$delta{$_} ||= 0;
 	}
 	
 	if ($self->{diagnostic}) {
@@ -534,7 +541,7 @@ sub _build_parser {
 	$field_list =~ s|(%{(\w+)})|($tempdur->can($2)) ? "#$2#" : $1 |eg;
 	
 	# White space:
-	$regex =~ s/%(\d*)[tn]/($1) ? "\s{$1}" : "\s+"/eg;
+	$regex =~ s/%(\d*)[tn]/($1) ? "\\s{$1}" : "\\s+"/eg;
 	$field_list =~ s/%(\d*)[tn]//g;
 
 	# is replaced by %.

@@ -37,4 +37,12 @@ Revision history for Perl extension DateTime::Format::Duration.
 		- Moved old, redundant tests to *.old. 
 		  They should still pass if you want them!
 		  
-		  
+1.0101 2004-01-09T02:28:00Z
+	- the 'anonymous tester' release
+		- added 'use warnings'
+		- fixed a missing escape on the whitespace parser
+			- thanks to fairly anonymous CPAN tester!
+
+
+
+

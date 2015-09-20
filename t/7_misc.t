@@ -1,5 +1,7 @@
+
 use Test::More tests => 7;
 
+use warnings;
 use DateTime;
 use DateTime::Duration;
 use DateTime::Format::Duration;

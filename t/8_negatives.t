@@ -1,3 +1,6 @@
+
+use warnings;
+
 use DateTime;
 use DateTime::Duration;
 use DateTime::Format::Duration;
@@ -85,11 +88,11 @@ foreach my $test (@tests) {
 	$strf->set_pattern( $test->{pattern} );
 	$strf->{diagnostic} = 1 if $test->{diagnostic};
 	is( 
-		$strf->format_duration_from_deltas( $test->{duration} ),
+		$strf->format_duration_from_deltas( %{$test->{duration}} ),
 		$test->{expect},
 		$test->{title}
-	) or diag( "Failed on " . $test->{pattern} ) . 
-		 diag( "Got: " . Dump( $test->{duration} ));
+	) or diag( "Failed on " . $test->{pattern} . "\n" . 
+		       "Got: " . Dump( $test->{duration} ));
 	
 	is( 
 		$strf->format_duration( DateTime::Duration->new( %{$test->{duration}} )),
