@@ -20,18 +20,18 @@ our $VERSION = '1.04';
 #---------------------------------------------------------------------------
 
 sub new {
-	my $class = shift;
-	my %args = validate( @_, {
-		pattern		=> { type => SCALAR, optional => 1 },
-		base		=> { type => OBJECT | UNDEF, default => undef },
-		normalise	=> { type => SCALAR, default => 0 },
-		normalize	=> { type => SCALAR, default => 0 },
-	});
+    my $class = shift;
+    my %args = validate( @_, {
+        pattern      => { type => SCALAR, optional => 1 },
+        base         => { type => OBJECT | UNDEF, default => undef },
+        normalise    => { type => SCALAR, default => 0 },
+        normalize    => { type => SCALAR, default => 0 },
+    });
 
-	$args{normalise} ||= delete $args{normalize};
-	$args{normalise} = 1 if $args{base};
+    $args{normalise} ||= delete $args{normalize};
+    $args{normalise} = 1 if $args{base};
 
-	return bless \%args, $class;
+    return bless \%args, $class;
 }
 
 
@@ -41,29 +41,29 @@ sub new {
 
 sub pattern { croak("No arguments should be passed to pattern. Use set_pattern() instead.") if $_[1]; $_[0]->{pattern} or undef }
 sub set_pattern {
-	my $self = shift;
-	my $newpattern = shift;
-	$self->{parser} = '';
-	$self->{pattern} = $newpattern;
-	return $self;
+    my $self = shift;
+    my $newpattern = shift;
+    $self->{parser} = '';
+    $self->{pattern} = $newpattern;
+    return $self;
 }
 
 sub base { croak("No arguments should be passed to base. Use set_base() instead.") if $_[1]; $_[0]->{base} or undef }
 sub set_base {
-	my $self = shift;
-	my $newbase = shift;
-	croak("Argument to set_base() must be a DateTime object.") unless ref($newbase) eq 'DateTime';
-	$self->{base} = $newbase;
-	return $self;
+    my $self = shift;
+    my $newbase = shift;
+    croak("Argument to set_base() must be a DateTime object.") unless ref($newbase) eq 'DateTime';
+    $self->{base} = $newbase;
+    return $self;
 }
 
 sub normalising { croak("No arguments should be passed to normalising. Use set_normalising() instead.") if $_[1]; ($_[0]->{normalise}) ? 1 : 0 }
 *normalizing = \&normalising; *normalizing = \&normalising;
 sub set_normalising {
-	my $self = shift;
-	my $new = shift;
-	$self->{normalise} = ($new) ? 1 : 0;
-	return $self;
+    my $self = shift;
+    my $new = shift;
+    $self->{normalise} = ($new) ? 1 : 0;
+    return $self;
 }
 *set_normalizing = \&set_normalising; *set_normalizing = \&set_normalising;
 
@@ -87,8 +87,8 @@ my %formats =
       'M' => sub { sprintf( '%02d', $_[0]->{minutes} ) },
       'n' => sub { "\n" }, # should this be OS-sensitive?"
       'N' => sub { _format_nanosecs(@_) },
-	  'p' => sub { ($_[0]->{negative}) ? '-' : '+' },
-	  'P' => sub { ($_[0]->{negative}) ? '-' : '' },
+      'p' => sub { ($_[0]->{negative}) ? '-' : '+' },
+      'P' => sub { ($_[0]->{negative}) ? '-' : '' },
       'r' => sub { sprintf('%02d:%02d:%02d', $_[0]->{hours}, $_[0]->{minutes}, $_[0]->{seconds} ) },
       'R' => sub { sprintf('%02d:%02d', $_[0]->{hours}, $_[0]->{minutes}) },
       's' => sub { $_[1]->as_seconds($_[0]) },
@@ -96,7 +96,7 @@ my %formats =
       't' => sub { "\t" }, #"
       'T' => sub { sprintf('%s%02d:%02d:%02d', ($_[0]->{negative}) ? '-' : '', $_[0]->{hours}, $_[0]->{minutes}, $_[0]->{seconds} ) },
       'u' => sub { $_[1]->as_days($_[0]) % 7 },
-	  'V' => sub { $_[1]->as_weeks($_[0]) },
+      'V' => sub { $_[1]->as_weeks($_[0]) },
       'W' => sub { int(($_[1]->as_seconds($_[0]) / (60*60*24*7))*1_000_000_000) / 1_000_000_000 },
       'y' => sub { sprintf( '%02d', substr( $_[0]->{years}, -2 ) ) },
       'Y' => sub { return $_[0]->{years} },
@@ -111,75 +111,75 @@ my %formats =
 sub format_duration {
     my $self = shift;
 
-	my $duration;
-	my @formats;
+    my $duration;
+    my @formats;
 
-	if ( scalar(@_) == 1 ) {
-		$duration = shift;
-		@formats = ($self->pattern) if $self->pattern;
-	} else {
-		my %args = validate( @_, {
-			pattern		=> { type => SCALAR | ARRAYREF, default => $self->pattern },
-			duration	=> { type => OBJECT },
-		});
-		$duration = $args{duration};
-		@formats = ref($args{pattern}) ? @{$args{pattern}} : ($args{pattern});
-	}
+    if ( scalar(@_) == 1 ) {
+        $duration = shift;
+        @formats = ($self->pattern) if $self->pattern;
+    } else {
+        my %args = validate( @_, {
+            pattern        => { type => SCALAR | ARRAYREF, default => $self->pattern },
+            duration    => { type => OBJECT },
+        });
+        $duration = $args{duration};
+        @formats = ref($args{pattern}) ? @{$args{pattern}} : ($args{pattern});
+    }
 
-	croak("No formats defined") unless @formats;
+    croak("No formats defined") unless @formats;
 
-	my %duration = ($self->normalising)
-		? $self->normalise( $duration )
-		: $duration->deltas;
+    my %duration = ($self->normalising)
+        ? $self->normalise( $duration )
+        : $duration->deltas;
 
-	return $self->format_duration_from_deltas(
-		pattern => [@formats],
-		%duration
-	);
+    return $self->format_duration_from_deltas(
+        pattern => [@formats],
+        %duration
+    );
 }
 
 
 sub format_duration_from_deltas {
     my $self = shift;
 
-	my %args = validate( @_, {
-		pattern		=> { type => SCALAR | ARRAYREF, default => $self->pattern },
-		negative	=> { type => SCALAR, default => 0 },
-		years		=> { type => SCALAR, default => 0 },
-		months		=> { type => SCALAR, default => 0 },
-		days		=> { type => SCALAR, default => 0 },
-		hours		=> { type => SCALAR, default => 0 },
-		minutes		=> { type => SCALAR, default => 0 },
-		seconds		=> { type => SCALAR, default => 0 },
-		nanoseconds	=> { type => SCALAR, default => 0 },
-	});
+    my %args = validate( @_, {
+        pattern        => { type => SCALAR | ARRAYREF, default => $self->pattern },
+        negative    => { type => SCALAR, default => 0 },
+        years        => { type => SCALAR, default => 0 },
+        months        => { type => SCALAR, default => 0 },
+        days        => { type => SCALAR, default => 0 },
+        hours        => { type => SCALAR, default => 0 },
+        minutes        => { type => SCALAR, default => 0 },
+        seconds        => { type => SCALAR, default => 0 },
+        nanoseconds    => { type => SCALAR, default => 0 },
+    });
 
-	my @formats = ref($args{pattern}) ? @{$args{pattern}} : ($args{pattern});
-	delete $args{pattern};
-	my %duration = ($self->normalising)
-		? $self->normalise( %args )
-		: %args;
+    my @formats = ref($args{pattern}) ? @{$args{pattern}} : ($args{pattern});
+    delete $args{pattern};
+    my %duration = ($self->normalising)
+        ? $self->normalise( %args )
+        : %args;
 
     my @r;
     foreach my $f (@formats)
     {
-	   # regex from Date::Format - thanks Graham!
-       $f =~ s/
-                %(\d*)([%a-zA-MO-Z]) # N returns from the left rather than the right
-               /
-                $formats{$2}
-					? ($1)
-						? sprintf("%0$1d", substr($formats{$2}->(\%duration, $self),$1*-1) )
-						: $formats{$2}->(\%duration, $self)
-					: $1
+        # regex from Date::Format - thanks Graham!
+        $f =~ s/
+        %(\d*)([%a-zA-MO-Z]) # N returns from the left rather than the right
+           /
+        $formats{$2}
+            ? ($1)
+                ? sprintf("%0$1d", substr($formats{$2}->(\%duration, $self),$1*-1) )
+                : $formats{$2}->(\%duration, $self)
+            : $1
 
-               /sgex;
+           /sgex;
 
         # %3N
         $f =~ s/
-                %(\d*)N
+            %(\d*)N
                /
-                $formats{N}->(\%duration, $1)
+            $formats{N}->(\%duration, $1)
                /sgex;
 
         return $f unless wantarray;
@@ -192,45 +192,45 @@ sub format_duration_from_deltas {
 
 
 sub parse_duration {
-	my $self = shift;
-	DateTime::Duration->new(
-		$self->parse_duration_as_deltas(@_)
-	);
+    my $self = shift;
+    DateTime::Duration->new(
+        $self->parse_duration_as_deltas(@_)
+    );
 }
 
 sub parse_duration_as_deltas {
     my ( $self, $time_string ) = @_;
 
-	local $^W = undef;
+    local $^W = undef;
 
-	# Variables from the parser
-	my (	$centuries,		$years,			$months,
-			$weeks,			$days,			$hours,
-			$minutes,		$seconds,		$nanoseconds
-		);
+    # Variables from the parser
+    my ( $centuries,$years,   $months,
+         $weeks,    $days,    $hours,
+         $minutes,  $seconds, $nanoseconds
+       );
 
-	# Variables for DateTime
-	my (	$Years,			$Months,		$Days,
-			$Hours,			$Minutes,		$Seconds,		$Nanoseconds,
-		) = ();
+    # Variables for DateTime
+    my ( $Years, $Months,  $Days,
+         $Hours, $Minutes, $Seconds, $Nanoseconds,
+       ) = ();
 
-	# Run the parser
-	my $parser = $self->{parser} || $self->_build_parser;
-	eval($parser);
-	die "Parser ($parser) died:$@" if $@;
+    # Run the parser
+    my $parser = $self->{parser} || $self->_build_parser;
+    eval($parser);
+    die "Parser ($parser) died:$@" if $@;
 
-	$years += ($centuries * 100);
-	$days  += ($weeks     * 7  );
+    $years += ($centuries * 100);
+    $days  += ($weeks     * 7  );
 
-	return (
-		years		=> $years		|| 0,
-		months		=> $months		|| 0,
-		days		=> $days		|| 0,
-		hours		=> $hours		|| 0,
-		minutes		=> $minutes		|| 0,
-		seconds		=> $seconds		|| 0,
-		nanoseconds => $nanoseconds	|| 0,
-	);
+    return (
+        years       => $years       || 0,
+        months      => $months      || 0,
+        days        => $days        || 0,
+        hours       => $hours       || 0,
+        minutes     => $minutes     || 0,
+        seconds     => $seconds     || 0,
+        nanoseconds => $nanoseconds || 0,
+    );
 
 }
 
@@ -240,214 +240,208 @@ sub parse_duration_as_deltas {
 #---------------------------------------------------------------------------
 
 sub normalise {
-	my $self = shift;
+    my $self = shift;
 
-	return $self->normalise_no_base(@_)
-		if (
-			($self->{normalising} and $self->{normalising} =~ /^ISO$/i)
-			or not $self->base
-		);
+    return $self->normalise_no_base(@_)
+        if (
+            ($self->{normalising} and $self->{normalising} =~ /^ISO$/i)
+            or not $self->base
+        );
 
-	my %delta = (ref($_[0]) =~/^DateTime::Duration/)
-		? $_[0]->deltas
-		: @_;
+    my %delta = (ref($_[0]) =~/^DateTime::Duration/)
+        ? $_[0]->deltas
+        : @_;
 
-	if (delete $delta{negative}) {
-		foreach (keys %delta) { $delta{$_} *= -1 }
-	}
+    if (delete $delta{negative}) {
+        foreach (keys %delta) { $delta{$_} *= -1 }
+    }
 
+    if ($self->{diagnostic}) {require Data::Dumper; print 'Pre Normalise: ' . Data::Dumper::Dumper( \%delta );}
 
-
-	if ($self->{diagnostic}) {require Data::Dumper; print 'Pre Normalise: ' . Data::Dumper::Dumper( \%delta );}
-
-	my $start = $self->base->clone;
-	my $end   = $self->base->clone;
-	# Can't just add the hash as ->add(%delta) because of mixed positivity:
-	foreach (qw/years months days hours minutes seconds nanoseconds/) {
-		$end->add( $_ => $delta{$_}||0 );
-	 	print "Adding $delta{$_} $_: " . $end->datetime . "\n" if $self->{diagnostic};
-	}
+    my $start = $self->base->clone;
+    my $end   = $self->base->clone;
+    # Can't just add the hash as ->add(%delta) because of mixed positivity:
+    foreach (qw/years months days hours minutes seconds nanoseconds/) {
+        $end->add( $_ => $delta{$_}||0 );
+        print "Adding $delta{$_} $_: " . $end->datetime . "\n" if $self->{diagnostic};
+    }
 
 
-	my %new_delta;
-	my $set_negative = 0;
-	if ($start > $end){
-		($start, $end) = ($end, $start);
-		$set_negative = 1;
-	}
+    my %new_delta;
+    my $set_negative = 0;
+    if ($start > $end) {
+        ($start, $end) = ($end, $start);
+        $set_negative = 1;
+    }
 
-	# Creeping method:
-	$new_delta{years} = $end->year - $start->year;
- 	printf("Adding %d years: %s\n", $new_delta{years}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
+    # Creeping method:
+    $new_delta{years} = $end->year - $start->year;
+    printf("Adding %d years: %s\n", $new_delta{years}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
 
-	$new_delta{months} = $end->month - $start->month;
- 	printf("Adding %d months: %s\n", $new_delta{months}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
+    $new_delta{months} = $end->month - $start->month;
+    printf("Adding %d months: %s\n", $new_delta{months}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
 
-	$new_delta{days} = $end->day - $start->day;
- 	printf("Adding %d days: %s\n", $new_delta{days}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
+    $new_delta{days} = $end->day - $start->day;
+    printf("Adding %d days: %s\n", $new_delta{days}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
 
-	$new_delta{hours} = $end->hour - $start->hour;
- 	printf("Adding %d hours: %s\n", $new_delta{hours}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
+    $new_delta{hours} = $end->hour - $start->hour;
+    printf("Adding %d hours: %s\n", $new_delta{hours}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
 
-	$new_delta{minutes} = $end->minute - $start->minute;
- 	printf("Adding %d minutes: %s\n", $new_delta{minutes}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
+    $new_delta{minutes} = $end->minute - $start->minute;
+    printf("Adding %d minutes: %s\n", $new_delta{minutes}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
 
-	$new_delta{seconds} = $end->second - $start->second;
- 	printf("Adding %d seconds: %s\n", $new_delta{seconds}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
+    $new_delta{seconds} = $end->second - $start->second;
+    printf("Adding %d seconds: %s\n", $new_delta{seconds}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
 
-	$new_delta{nanoseconds} = $end->nanosecond - $start->nanosecond;
- 	printf("Adding %d nanoseconds: %s\n", $new_delta{nanoseconds}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
+    $new_delta{nanoseconds} = $end->nanosecond - $start->nanosecond;
+    printf("Adding %d nanoseconds: %s\n", $new_delta{nanoseconds}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
 
+    if( $new_delta{nanoseconds} < 0 ){
+        $new_delta{nanoseconds} += MAX_NANOSECONDS;
+        $new_delta{seconds}--;
+        printf("Oops: Adding %d nanoseconds, %d seconds: %s\n", $new_delta{nanoseconds}, $new_delta{seconds}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
+    }
 
+    if( $new_delta{seconds} < 0 ){
+        $new_delta{seconds} += $end->clone->truncate( to => 'minute' )->subtract( seconds => 1 )->second + 1;
+        $new_delta{minutes}--;
+        printf("Oops: Adding %d seconds, %d minutes: %s\n", $new_delta{seconds}, $new_delta{minutes}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
+    }
 
+    if( $new_delta{minutes} < 0 ){
+        $new_delta{minutes} += 60;
+        $new_delta{hours}--;
+        printf("Oops: Adding %d minutes, %d hours: %s\n", $new_delta{minutes}, $new_delta{hours}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
+    }
 
-	if( $new_delta{nanoseconds} < 0 ){
-		$new_delta{nanoseconds} += MAX_NANOSECONDS;
-		$new_delta{seconds}--;
-	 	printf("Oops: Adding %d nanoseconds, %d seconds: %s\n", $new_delta{nanoseconds}, $new_delta{seconds}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
-	}
+    if( $new_delta{hours} < 0 ){
+        $new_delta{hours} += _hours_in_day($end->clone->truncate( to => 'day' )->subtract( seconds => 5 ));
+        $new_delta{days}--;
+        printf("Oops: Adding %d hours, %d days: %s\n", $new_delta{hours}, $new_delta{days}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
+    }
 
-	if( $new_delta{seconds} < 0 ){
-		$new_delta{seconds} += $end->clone->truncate( to => 'minute' )->subtract( seconds => 1 )->second + 1;
-		$new_delta{minutes}--;
-	 	printf("Oops: Adding %d seconds, %d minutes: %s\n", $new_delta{seconds}, $new_delta{minutes}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
-	}
-
-	if( $new_delta{minutes} < 0 ){
-		$new_delta{minutes} += 60;
-		$new_delta{hours}--;
-	 	printf("Oops: Adding %d minutes, %d hours: %s\n", $new_delta{minutes}, $new_delta{hours}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
-	}
-
-	if( $new_delta{hours} < 0 ){
-		$new_delta{hours} += _hours_in_day($end->clone->truncate( to => 'day' )->subtract( seconds => 5 ));
-		$new_delta{days}--;
-	 	printf("Oops: Adding %d hours, %d days: %s\n", $new_delta{hours}, $new_delta{days}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
-	}
-
-	if( $new_delta{days} < 0 ){
+    if( $new_delta{days} < 0 ){
 # Thought this was correct .. I was wrong, but I want to leave it here anyway
-#		$new_delta{days} += $end->clone->truncate( to => 'month' )->subtract( seconds => 5 )->day;
-		$new_delta{days} += $start->clone->truncate( to => 'month' )->add(months => 1)->subtract( seconds => 5 )->day;
-		$new_delta{months}--;
-	 	printf("Oops: Adding %d days, %d months: %s\n", $new_delta{days}, $new_delta{months}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
-	}
+#        $new_delta{days} += $end->clone->truncate( to => 'month' )->subtract( seconds => 5 )->day;
+        $new_delta{days} += $start->clone->truncate( to => 'month' )->add(months => 1)->subtract( seconds => 5 )->day;
+        $new_delta{months}--;
+        printf("Oops: Adding %d days, %d months: %s\n", $new_delta{days}, $new_delta{months}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
+    }
 
-	if( $new_delta{months} < 0 ){
-		$new_delta{months} += 12;
-		$new_delta{years}--;
-	 	printf("Oops: Adding %d months, %d years: %s\n", $new_delta{months}, $new_delta{years}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
-	}
+    if( $new_delta{months} < 0 ){
+        $new_delta{months} += 12;
+        $new_delta{years}--;
+        printf("Oops: Adding %d months, %d years: %s\n", $new_delta{months}, $new_delta{years}, $start->clone->add( %new_delta )->datetime) if $self->{diagnostic};
+    }
 
+    $new_delta{negative} = $set_negative;
 
-	$new_delta{negative} = $set_negative;
+    if ($self->{diagnostic}) {require Data::Dumper; print 'Post Normalisation: ' . Data::Dumper::Dumper( \%new_delta );}
 
- 	if ($self->{diagnostic}) {require Data::Dumper; print 'Post Normalisation: ' . Data::Dumper::Dumper( \%new_delta );}
-
-	return %new_delta
+    return %new_delta
 }
 *normalize = \&normalise;
 *normalize = \&normalise;
 
 sub normalise_no_base {
-	my $self = shift;
-	my %delta = (ref($_[0]) =~/^DateTime::Duration/) ? $_[0]->deltas : @_;
+    my $self = shift;
+    my %delta = (ref($_[0]) =~/^DateTime::Duration/) ? $_[0]->deltas : @_;
 
-	if (delete $delta{negative}) {
-		foreach (keys %delta) { $delta{$_} *= -1 }
-	}
-	foreach(qw/years months days hours minutes seconds nanoseconds/) {
-		$delta{$_} ||= 0;
-	}
+    if (delete $delta{negative}) {
+        foreach (keys %delta) { $delta{$_} *= -1 }
+    }
+    foreach(qw/years months days hours minutes seconds nanoseconds/) {
+        $delta{$_} ||= 0;
+    }
 
-	if ($self->{diagnostic}) {
-		require Data::Dumper;
-		print 'Pre Baseless Normalise: ' . Data::Dumper::Dumper( \%delta );
-	}
+    if ($self->{diagnostic}) {
+        require Data::Dumper;
+        print 'Pre Baseless Normalise: ' . Data::Dumper::Dumper( \%delta );
+    }
 
-	# Remove any decimals:
-	$delta{nanoseconds} += (MAX_NANOSECONDS * ($delta{seconds} - int($delta{seconds})));
-	$delta{seconds} = int($delta{seconds});
-	$delta{seconds} += (60 * ($delta{minutes} - int($delta{minutes})));
-	$delta{minutes} = int($delta{minutes});
-	$delta{minutes} += (60 * ($delta{hours} - int($delta{hours})));
-	$delta{hours} = int($delta{hours});
-	$delta{hours} += (24 * ($delta{days} - int($delta{days})));
-	$delta{days} = int($delta{days});
-	$delta{days} += (30 * ($delta{months} - int($delta{months})));
-	$delta{months} = int($delta{months});
+    # Remove any decimals:
+    $delta{nanoseconds} += (MAX_NANOSECONDS * ($delta{seconds} - int($delta{seconds})));
+    $delta{seconds} = int($delta{seconds});
+    $delta{seconds} += (60 * ($delta{minutes} - int($delta{minutes})));
+    $delta{minutes} = int($delta{minutes});
+    $delta{minutes} += (60 * ($delta{hours} - int($delta{hours})));
+    $delta{hours} = int($delta{hours});
+    $delta{hours} += (24 * ($delta{days} - int($delta{days})));
+    $delta{days} = int($delta{days});
+    $delta{days} += (30 * ($delta{months} - int($delta{months})));
+    $delta{months} = int($delta{months});
 
-	($delta{nanoseconds}, $delta{seconds})  = _set_max($delta{nanoseconds}, MAX_NANOSECONDS, $delta{seconds});
-	($delta{seconds},     $delta{minutes})  = _set_max($delta{seconds},     60,              $delta{minutes});
-	($delta{minutes},     $delta{hours})    = _set_max($delta{minutes},     60,              $delta{hours}  );
-	($delta{hours},       $delta{days})     = _set_max($delta{hours},       24,              $delta{days}   );
-	($delta{days},        $delta{months})   = _set_max($delta{days},        30,              $delta{months} )
-		if $self->{normalise} =~ /^iso$/i;
-	($delta{months},      $delta{years})    = _set_max($delta{months},      12,              $delta{years}  );
+    ($delta{nanoseconds}, $delta{seconds})  = _set_max($delta{nanoseconds}, MAX_NANOSECONDS, $delta{seconds});
+    ($delta{seconds},     $delta{minutes})  = _set_max($delta{seconds},     60,          $delta{minutes});
+    ($delta{minutes},     $delta{hours})    = _set_max($delta{minutes},     60,          $delta{hours}  );
+    ($delta{hours},       $delta{days})     = _set_max($delta{hours},       24,          $delta{days}   );
+    ($delta{days},    $delta{months})   = _set_max($delta{days},    30,          $delta{months} )
+        if $self->{normalise} =~ /^iso$/i;
+    ($delta{months},      $delta{years})    = _set_max($delta{months},      12,          $delta{years}  );
 
-	if ($self->{diagnostic}) {
-		require Data::Dumper;
-		print 'Post Baseless Normalise: ' . Data::Dumper::Dumper( \%delta );
-	}
+    if ($self->{diagnostic}) {
+        require Data::Dumper;
+        print 'Post Baseless Normalise: ' . Data::Dumper::Dumper( \%delta );
+    }
 
-	%delta = _denegate( %delta );
+    %delta = _denegate( %delta );
 
-	if ($self->{diagnostic}) {
-		require Data::Dumper;
-		print 'Post Denegation: ' . Data::Dumper::Dumper( \%delta );
-	}
+    if ($self->{diagnostic}) {
+        require Data::Dumper;
+        print 'Post Denegation: ' . Data::Dumper::Dumper( \%delta );
+    }
 
-	return %delta;
+    return %delta;
 }
 *normalize_no_base = \&normalise_no_base;
 *normalize_no_base = \&normalise_no_base;
 
 sub as_weeks {
-	my $self = shift;
-	return int($self->as_seconds($_[0]) / (7*24*60*60));
+    my $self = shift;
+    return int($self->as_seconds($_[0]) / (7*24*60*60));
 }
 
 sub as_days {
-	my $self = shift;
-	return int($self->as_seconds($_[0]) / (24*60*60));
+    my $self = shift;
+    return int($self->as_seconds($_[0]) / (24*60*60));
 }
 
 sub as_seconds {
-	my $self = shift;
+    my $self = shift;
 
-	my %delta = (ref($_[0])) ? %{$_[0]} : @_;
-	if (delete $delta{negative}) {foreach( keys %delta ) { $delta{$_} *= -1 }};
+    my %delta = (ref($_[0])) ? %{$_[0]} : @_;
+    if (delete $delta{negative}) {foreach( keys %delta ) { $delta{$_} *= -1 }};
 
-	unless ($self->base) {
-		my $seconds = $delta{nanoseconds} / MAX_NANOSECONDS;
-		$seconds += $delta{seconds};
-		$seconds += $delta{minutes} * 60;
-		$seconds += $delta{hours}   * (60*60);
-		$seconds += $delta{days}    * (24*60*60);
-		$seconds += $delta{months}  * (30*24*60*60);
-		$seconds += $delta{years}   * (12*30*24*60*60);
-		return $seconds;
-	}
+    unless ($self->base) {
+        my $seconds = $delta{nanoseconds} / MAX_NANOSECONDS;
+        $seconds += $delta{seconds};
+        $seconds += $delta{minutes} * 60;
+        $seconds += $delta{hours}   * (60*60);
+        $seconds += $delta{days}    * (24*60*60);
+        $seconds += $delta{months}  * (30*24*60*60);
+        $seconds += $delta{years}   * (12*30*24*60*60);
+        return $seconds;
+    }
 
-	my $dt1 = $self->base + DateTime::Duration->new( %delta );
-	return int(($dt1->{utc_rd_days} - $self->base->{utc_rd_days}) * (24*60*60))
-			+ ($dt1->{utc_rd_secs} - $self->base->{utc_rd_secs});
+    my $dt1 = $self->base + DateTime::Duration->new( %delta );
+    return int(($dt1->{utc_rd_days} - $self->base->{utc_rd_days}) * (24*60*60))
+            + ($dt1->{utc_rd_secs} - $self->base->{utc_rd_secs});
 }
 
 
 sub debug_level{
-	my $self = shift;
-	my $level = shift;
-	if ($level > 0) {
-		Params::Validate::validation_options(
-			on_fail => \&Carp::confess,
-		);
-	} else {
-		Params::Validate::validation_options(
-			on_fail => undef,
-		);
-	}
-	$self->{diagnostic} = ($level) ? $level-1 : 0;
+    my $self = shift;
+    my $level = shift;
+    if ($level > 0) {
+        Params::Validate::validation_options(
+            on_fail => \&Carp::confess,
+        );
+    } else {
+        Params::Validate::validation_options(
+            on_fail => undef,
+        );
+    }
+    $self->{diagnostic} = ($level) ? $level-1 : 0;
 }
 
 
@@ -457,38 +451,38 @@ sub debug_level{
 #---------------------------------------------------------------------------
 
 sub strfduration { #format
-	my %args = validate( @_, {
-		pattern		=> { type => SCALAR | ARRAYREF },
-		duration	=> { type => OBJECT },
-		normalise	=> { type => SCALAR, optional => 1 },
-		base		=> { type => OBJECT, optional => 1 },
-		debug		=> { type => SCALAR, default => 0 },
-	});
-	my $new = DateTime::Format::Duration->new(
-		pattern => $args{pattern},
-		base    => $args{base},
-		normalise=> $args{normalise},
-	);
-	$new->debug_level( $args{debug } );
-	return $new->format_duration( $args{duration} );
+    my %args = validate( @_, {
+        pattern        => { type => SCALAR | ARRAYREF },
+        duration    => { type => OBJECT },
+        normalise    => { type => SCALAR, optional => 1 },
+        base        => { type => OBJECT, optional => 1 },
+        debug        => { type => SCALAR, default => 0 },
+    });
+    my $new = DateTime::Format::Duration->new(
+        pattern => $args{pattern},
+        base    => $args{base},
+        normalise=> $args{normalise},
+    );
+    $new->debug_level( $args{debug } );
+    return $new->format_duration( $args{duration} );
 }
 
 sub strpduration { #parse
-	my %args = validate( @_, {
-		pattern		=> { type => SCALAR | ARRAYREF },
-		duration	=> { type => SCALAR },
-		base		=> { type => OBJECT, optional => 1 },
-		as_deltas	=> { type => SCALAR, default => 0 },
-		debug		=> { type => SCALAR, default => 0 },
-	});
-	my $new = DateTime::Format::Duration->new(
-		pattern => $args{pattern},
-		base    => $args{base},
-	);
-	$new->debug_level( $args{debug} );
-	return $new->parse_duration( $args{duration} ) unless $args{as_deltas};
+    my %args = validate( @_, {
+        pattern        => { type => SCALAR | ARRAYREF },
+        duration    => { type => SCALAR },
+        base        => { type => OBJECT, optional => 1 },
+        as_deltas    => { type => SCALAR, default => 0 },
+        debug        => { type => SCALAR, default => 0 },
+    });
+    my $new = DateTime::Format::Duration->new(
+        pattern => $args{pattern},
+        base    => $args{base},
+    );
+    $new->debug_level( $args{debug} );
+    return $new->parse_duration( $args{duration} ) unless $args{as_deltas};
 
-	return $new->parse_duration_as_deltas( $args{duration} );
+    return $new->parse_duration_as_deltas( $args{duration} );
 }
 
 
@@ -498,10 +492,10 @@ sub strpduration { #parse
 #---------------------------------------------------------------------------
 
 sub _format_nanosecs {
-	my %deltas = %{+shift};
+    my %deltas = %{+shift};
     my $precision = shift;
 
-	my $ret = sprintf( "%09d", $deltas{nanoseconds} );
+    my $ret = sprintf( "%09d", $deltas{nanoseconds} );
     return $ret unless $precision;   # default = 9 digits
 
     my ( $int, $frac ) = split(/[.,]/, $deltas{nanoseconds});
@@ -511,168 +505,168 @@ sub _format_nanosecs {
 }
 
 sub _build_parser {
-	my $self = shift;
-	my $regex = my $field_list = shift || $self->pattern;
-	my @fields = $field_list =~ m/(%\{\w+\}|%\d*.)/g;
-	$field_list = join('',@fields);
+    my $self = shift;
+    my $regex = my $field_list = shift || $self->pattern;
+    my @fields = $field_list =~ m/(%\{\w+\}|%\d*.)/g;
+    $field_list = join('',@fields);
 
-	my $tempdur = DateTime::Duration->new( seconds => 0 ); # Created just so we can do $tempdt->can(..)
+    my $tempdur = DateTime::Duration->new( seconds => 0 ); # Created just so we can do $tempdt->can(..)
 
-	# I'm absoutely certain there's a better way to do this:
-	$regex=~s|([\/\.\-])|\\$1|g;
+    # I'm absoutely certain there's a better way to do this:
+    $regex=~s|([\/\.\-])|\\$1|g;
 
-	$regex =~ s/%[Tr]/%H:%M:%S/g;
-	$field_list =~ s/%[Tr]/%H%M%S/g;
-	# %T is the time as %H:%M:%S.
+    $regex =~ s/%[Tr]/%H:%M:%S/g;
+    $field_list =~ s/%[Tr]/%H%M%S/g;
+    # %T is the time as %H:%M:%S.
 
-	$regex =~ s/%R/%H:%M/g;
-	$field_list =~ s/%R/%H%M/g;
-	#is the time as %H:%M.
+    $regex =~ s/%R/%H:%M/g;
+    $field_list =~ s/%R/%H%M/g;
+    #is the time as %H:%M.
 
-	$regex =~ s|%F|%Y\\-%m\\-%d|g;
-	$field_list =~ s|%F|%Y%m%d|g;
-	#is the same as %Y-%m-%d
+    $regex =~ s|%F|%Y\\-%m\\-%d|g;
+    $field_list =~ s|%F|%Y%m%d|g;
+    #is the same as %Y-%m-%d
 
-	# Negative and Positive
-	$regex =~ s/%P/[+-]?/g;
-	$field_list =~ s/%P//g;#negative#/g;
-
-
-	# Numerated places:
-
-	# Centuries:
-	$regex =~ s/%(\d*)[C]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
-	$field_list =~ s/%(\d*)[C]/#centuries#/g;
-
-	# Years:
-	$regex =~ s/%(\d*)[Yy]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
-	$field_list =~ s/%(\d*)[Yy]/#years#/g;
-
-	# Months:
-	$regex =~ s/%(\d*)[m]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
-	$field_list =~ s/%(\d*)[m]/#months#/g;
-
-	# Weeks:
-	$regex =~ s/%(\d*)[GV]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
-	$field_list =~ s/%(\d*)[GV]/#weeks#/g;
-	$regex =~ s/%\d*[W]/" *([+-]?\\d+\\.?\\d*)"/eg;
-	$field_list =~ s/%\d*[W]/#weeks#/g;
-
-	# Days:
-	$regex =~ s/%(\d*)[deju]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
-	$field_list =~ s/%(\d*)[deju]/#days#/g;
-
-	# Hours:
-	$regex =~ s/%(\d*)[HIkl]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
-	$field_list =~ s/%(\d*)[HIkl]/#hours#/g;
-
-	# Minutes:
-	$regex =~ s/%(\d*)[M]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
-	$field_list =~ s/%(\d*)[M]/#minutes#/g;
-
-	# Seconds:
-	$regex =~ s/%(\d*)[sS]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
-	$field_list =~ s/%(\d*)[sS]/#seconds#/g;
-
-	# Nanoseconds:
-	$regex =~ s/%(\d*)[N]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
-	$field_list =~ s/%(\d*)[N]/#nanoseconds#/g;
+    # Negative and Positive
+    $regex =~ s/%P/[+-]?/g;
+    $field_list =~ s/%P//g;#negative#/g;
 
 
-	# Any function in DateTime.
-	$regex =~ s|%{(\w+)}|($tempdur->can($1)) ? "(.+)" : ".+"|eg;
-	$field_list =~ s|(%{(\w+)})|($tempdur->can($2)) ? "#$2#" : $1 |eg;
+    # Numerated places:
 
-	# White space:
-	$regex =~ s/%(\d*)[tn]/($1) ? "\\s{$1}" : "\\s+"/eg;
-	$field_list =~ s/%(\d*)[tn]//g;
+    # Centuries:
+    $regex =~ s/%(\d*)[C]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
+    $field_list =~ s/%(\d*)[C]/#centuries#/g;
 
-	# is replaced by %.
-	$regex =~ s/%%/%/g;
-	$field_list =~ s/%%//g;
+    # Years:
+    $regex =~ s/%(\d*)[Yy]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
+    $field_list =~ s/%(\d*)[Yy]/#years#/g;
 
-	$field_list=~s/#([a-z0-9_]+)#/\$$1, /gi;
-	$field_list=~s/,\s*$//;
+    # Months:
+    $regex =~ s/%(\d*)[m]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
+    $field_list =~ s/%(\d*)[m]/#months#/g;
 
-	croak("Unknown symbols in parse: $&") if $field_list=~/(\%\w)/g;
+    # Weeks:
+    $regex =~ s/%(\d*)[GV]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
+    $field_list =~ s/%(\d*)[GV]/#weeks#/g;
+    $regex =~ s/%\d*[W]/" *([+-]?\\d+\\.?\\d*)"/eg;
+    $field_list =~ s/%\d*[W]/#weeks#/g;
 
-	$self->{parser} = qq|($field_list) = \$time_string =~ /$regex/|;
+    # Days:
+    $regex =~ s/%(\d*)[deju]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
+    $field_list =~ s/%(\d*)[deju]/#days#/g;
+
+    # Hours:
+    $regex =~ s/%(\d*)[HIkl]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
+    $field_list =~ s/%(\d*)[HIkl]/#hours#/g;
+
+    # Minutes:
+    $regex =~ s/%(\d*)[M]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
+    $field_list =~ s/%(\d*)[M]/#minutes#/g;
+
+    # Seconds:
+    $regex =~ s/%(\d*)[sS]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
+    $field_list =~ s/%(\d*)[sS]/#seconds#/g;
+
+    # Nanoseconds:
+    $regex =~ s/%(\d*)[N]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
+    $field_list =~ s/%(\d*)[N]/#nanoseconds#/g;
+
+
+    # Any function in DateTime.
+    $regex =~ s|%{(\w+)}|($tempdur->can($1)) ? "(.+)" : ".+"|eg;
+    $field_list =~ s|(%{(\w+)})|($tempdur->can($2)) ? "#$2#" : $1 |eg;
+
+    # White space:
+    $regex =~ s/%(\d*)[tn]/($1) ? "\\s{$1}" : "\\s+"/eg;
+    $field_list =~ s/%(\d*)[tn]//g;
+
+    # is replaced by %.
+    $regex =~ s/%%/%/g;
+    $field_list =~ s/%%//g;
+
+    $field_list=~s/#([a-z0-9_]+)#/\$$1, /gi;
+    $field_list=~s/,\s*$//;
+
+    croak("Unknown symbols in parse: $&") if $field_list=~/(\%\w)/g;
+
+    $self->{parser} = qq|($field_list) = \$time_string =~ /$regex/|;
 }
 
 sub _set_max {
-	#$$_[0] should roll over to the next $$_[2] when it reaches $_[1]
-	#seconds should roll over to the next minute when it reaches 60.
-	my ($small, $max, $large) = @_;
-	#warn "$small should roll over to the next $large when it reaches $max\n";
-	$large += int($small / $max);
-	$small = ($small < 0)
-		? $small %  -$max
-		: $small % $max;
-	return ($small, $large);
+    #$$_[0] should roll over to the next $$_[2] when it reaches $_[1]
+    #seconds should roll over to the next minute when it reaches 60.
+    my ($small, $max, $large) = @_;
+    #warn "$small should roll over to the next $large when it reaches $max\n";
+    $large += int($small / $max);
+    $small = ($small < 0)
+        ? $small %  -$max
+        : $small % $max;
+    return ($small, $large);
 }
 
 sub _denegate {
-	my %delta = @_;
-	my ($negatives, $positives);
-	foreach(qw/years months days hours minutes seconds nanoseconds/) {
-		if ($delta{$_} < 0) {
-			$negatives++;
-		} elsif ($delta{$_} > 0) {
-			$positives++;
-		} # ignore == 0
-	}
-	if ($negatives and not $positives) {
-		foreach(qw/years months days hours minutes seconds nanoseconds/) {
-			if ($delta{$_} < 0) {
-				$delta{$_} *= -1
-			}
-			$delta{$_} ||= 0;
-		}
-		$delta{negative} = 1;
-	} elsif ($negatives and $positives) {
-		# Work to match largest component
-		my $make = '';
-		foreach(qw/years months days hours minutes seconds nanoseconds/) {
-			if ($delta{$_} < 0) {
-				$make = 'negative';
-				last;
-			} elsif ($delta{$_} > 0) {
-				$make = 'positive';
-				last;
-			}
-		}
-		if ($make) {
-			($delta{seconds}, $delta{minutes}) = _make($make,$delta{seconds}, 60, $delta{minutes});
-			($delta{minutes}, $delta{hours})   = _make($make,$delta{minutes}, 60, $delta{hours}  );
-			($delta{hours},   $delta{days})    = _make($make,$delta{hours},   24, $delta{days}   );
-			($delta{months},  $delta{years})   = _make($make,$delta{months},  12, $delta{years}  );
-			%delta = _denegate(%delta);
-		}
-	}
-	return %delta
+    my %delta = @_;
+    my ($negatives, $positives);
+    foreach(qw/years months days hours minutes seconds nanoseconds/) {
+        if ($delta{$_} < 0) {
+            $negatives++;
+        } elsif ($delta{$_} > 0) {
+            $positives++;
+        } # ignore == 0
+    }
+    if ($negatives and not $positives) {
+        foreach(qw/years months days hours minutes seconds nanoseconds/) {
+            if ($delta{$_} < 0) {
+                $delta{$_} *= -1
+            }
+            $delta{$_} ||= 0;
+        }
+        $delta{negative} = 1;
+    } elsif ($negatives and $positives) {
+        # Work to match largest component
+        my $make = '';
+        foreach(qw/years months days hours minutes seconds nanoseconds/) {
+            if ($delta{$_} < 0) {
+                $make = 'negative';
+                last;
+            } elsif ($delta{$_} > 0) {
+                $make = 'positive';
+                last;
+            }
+        }
+        if ($make) {
+            ($delta{seconds}, $delta{minutes}) = _make($make,$delta{seconds}, 60, $delta{minutes});
+            ($delta{minutes}, $delta{hours})   = _make($make,$delta{minutes}, 60, $delta{hours}  );
+            ($delta{hours},   $delta{days})    = _make($make,$delta{hours},   24, $delta{days}   );
+            ($delta{months},  $delta{years})   = _make($make,$delta{months},  12, $delta{years}  );
+            %delta = _denegate(%delta);
+        }
+    }
+    return %delta
 }
 
 sub _make {
-	my ($make, $small, $max, $large) = @_;
-	while ($small < 0 and $make eq 'positive') {
-		$small += $max;
-		$large -= 1;
-	}
-	while ($small > 0 and $make eq 'negative') {
-		$small -= $max;
-		$large += 1;
-	}
-	return ($small, $large);
+    my ($make, $small, $max, $large) = @_;
+    while ($small < 0 and $make eq 'positive') {
+        $small += $max;
+        $large -= 1;
+    }
+    while ($small > 0 and $make eq 'negative') {
+        $small -= $max;
+        $large += 1;
+    }
+    return ($small, $large);
 }
 
 sub _hours_in_day{
-	my $day = shift;
+    my $day = shift;
 
-	return (
-		$day->clone->truncate( to => 'day' )->add( days => 1 )->epoch
-		-
-		$day->clone->truncate( to => 'day' )->epoch
-	) / (60 * 60)
+    return (
+        $day->clone->truncate( to => 'day' )->add( days => 1 )->epoch
+        -
+        $day->clone->truncate( to => 'day' )->epoch
+    ) / (60 * 60)
 
 }
 
@@ -686,49 +680,49 @@ DateTime::Format::Duration - Format and parse DateTime::Durations
 
 =head1 SYNOPSIS
 
-	use DateTime::Format::Duration;
+    use DateTime::Format::Duration;
 
-	$d = DateTime::Format::Duration->new(
-		pattern => '%Y years, %m months, %e days, '.
-				'%H hours, %M minutes, %S seconds'
-	);
+    $d = DateTime::Format::Duration->new(
+        pattern => '%Y years, %m months, %e days, '.
+                '%H hours, %M minutes, %S seconds'
+    );
 
-	print $d->format_duration(
-		DateTime::Duration->new(
-			years   => 3,
-			months  => 5,
-			days    => 1,
-			hours   => 6,
-			minutes => 15,
-			seconds => 45,
-			nanoseconds => 12000
-		)
-	);
-	# 3 years, 5 months, 1 days, 6 hours, 15 minutes, 45 seconds
-
-
-	$duration = $d->parse_duration(
-		'3 years, 5 months, 1 days, 6 hours, 15 minutes, 45 seconds'
-	);
-	# Returns DateTime::Duration object
+    print $d->format_duration(
+        DateTime::Duration->new(
+            years   => 3,
+            months  => 5,
+            days    => 1,
+            hours   => 6,
+            minutes => 15,
+            seconds => 45,
+            nanoseconds => 12000
+        )
+    );
+    # 3 years, 5 months, 1 days, 6 hours, 15 minutes, 45 seconds
 
 
-	print $d->format_duration_from_deltas(
-		years   => 3,
-		months  => 5,
-		days    => 1,
-		hours   => 6,
-		minutes => 15,
-		seconds => 45,
-		nanoseconds => 12000
-	);
-	# 3 years, 5 months, 1 days, 6 hours, 15 minutes, 45 seconds
+    $duration = $d->parse_duration(
+        '3 years, 5 months, 1 days, 6 hours, 15 minutes, 45 seconds'
+    );
+    # Returns DateTime::Duration object
 
-	%deltas = $d->parse_duration_as_deltas(
-  		'3 years, 5 months, 1 days, 6 hours, 15 minutes, 45 seconds'
-	);
-	# Returns hash:
-	# (years=>3, months=>5, days=>1, hours=>6, minutes=>15, seconds=>45)
+
+    print $d->format_duration_from_deltas(
+        years   => 3,
+        months  => 5,
+        days    => 1,
+        hours   => 6,
+        minutes => 15,
+        seconds => 45,
+        nanoseconds => 12000
+    );
+    # 3 years, 5 months, 1 days, 6 hours, 15 minutes, 45 seconds
+
+    %deltas = $d->parse_duration_as_deltas(
+          '3 years, 5 months, 1 days, 6 hours, 15 minutes, 45 seconds'
+    );
+    # Returns hash:
+    # (years=>3, months=>5, days=>1, hours=>6, minutes=>15, seconds=>45)
 
 =head1 ABSTRACT
 
@@ -1005,11 +999,11 @@ This module works from lowest to highest precision to calculate the duration.
 So, based on a C<base> of 2004-03-28T00:00:00 the following transformations take
 place:
 
-	2003-01-01T00:00:00 - 2 years   = 2001-01-01T00:00:00 === -2 years
-	2001-01-01T00:00:00 + 1 month   = 2001-02-01T00:00:00 === -1 year, 11 months
-	2001-02-01T00:00:00 + 22 days   = 2001-02-23T00:00:00 === -1yr, 10mths, 6days
-	2001-02-22T00:00:00 + 11 hours  = 2001-02-23T11:00:00 === -1y, 10m, 6d, 13h
-	2001-02-22T11:00:00 - 9 minutes = 2001-02-23T10:51:00 === -1y, 10m, 6d, 13h, 9m
+    2003-01-01T00:00:00 - 2 years   = 2001-01-01T00:00:00 === -2 years
+    2001-01-01T00:00:00 + 1 month   = 2001-02-01T00:00:00 === -1 year, 11 months
+    2001-02-01T00:00:00 + 22 days   = 2001-02-23T00:00:00 === -1yr, 10mths, 6days
+    2001-02-22T00:00:00 + 11 hours  = 2001-02-23T11:00:00 === -1y, 10m, 6d, 13h
+    2001-02-22T11:00:00 - 9 minutes = 2001-02-23T10:51:00 === -1y, 10m, 6d, 13h, 9m
 
 =for html <img src="http://search.cpan.org/src/RICKM/DateTime-Format-Duration-1.0002/docs/figure1.gif">
 
@@ -1100,19 +1094,19 @@ These extra methods have been left in here firstly for backwards-compatibility
 but also as an added 'syntactic sugar'. Consider these two equivelent
 expressions:
 
-	$one = $o->format_duration(
-		DateTime::Duration->new(
-			years => -2,
-			days  => 13,
-			hours => -1
-		)
-	);
+    $one = $o->format_duration(
+        DateTime::Duration->new(
+            years => -2,
+            days  => 13,
+            hours => -1
+        )
+    );
 
-	$two = $o->format_duration_from_deltas(
-		years => -2,
-		days  => 13,
-		hours => -1
-	);
+    $two = $o->format_duration_from_deltas(
+        years => -2,
+        days  => 13,
+        hours => -1
+    );
 
 These both create the same string in $one and $two, but if you don't already
 have a DateTime::Duration object, the later looks cleaner.
