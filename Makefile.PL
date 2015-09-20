@@ -1,7 +1,7 @@
 use 5.00005;
 use ExtUtils::MakeMaker;
 
-print "PLEASE NOTE:";
+#print "PLEASE NOTE:";
 
 
 WriteMakefile(

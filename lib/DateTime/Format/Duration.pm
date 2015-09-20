@@ -13,7 +13,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw/strpduration strfduration/;
 our %EXPORT_TAGS = (ALL => [qw/strpduration strfduration/]);
 
-our $VERSION = '1.0101';
+our $VERSION = '1.02';
 
 #---------------------------------------------------------------------------
 # CONSTRUCTORS
@@ -62,7 +62,7 @@ sub normalising { croak("No arguments should be passed to normalising. Use set_n
 sub set_normalising {
 	my $self = shift;
 	my $new = shift;
-	$self->{normalise} = shift;
+	$self->{normalise} = ($new) ? 1 : 0;
 	return $self;
 }
 *set_normalizing = \&set_normalising; *set_normalizing = \&set_normalising;
@@ -698,9 +698,9 @@ The C<new> constructor takes the following attributes:
 This is a strf type pattern detailing the format of the duration.
 See the L</Patterns> sections below for more information.
 
-=item * C<normalise => $one_or_zero_or_ISO>
+=item * C<<normalise => $one_or_zero_or_ISO>>
 
-=item * C<normalize => $one_or_zero_or_ISO>
+=item * C<<normalize => $one_or_zero_or_ISO>>
 
 This determines whether durations are 'normalised'. For example, does 
 120 seconds become 2 minutes? 
@@ -709,7 +709,7 @@ Setting this value to true without also setting a C<base> means we will
 normalise without a base. See the L</Normalising without a base> section
 below.
 
-=item * C<base => $datetime_object>
+=item * C<<base => $datetime_object>>
 
 If a base DateTime is given then that is the normalisation date. Setting
 this attribute overrides the above option and sets normalise to true.
@@ -726,7 +726,7 @@ L<DateTime::Format::Duration> has the following methods:
 
 =item * C<format_duration( $datetime_duration_object )>
 
-=item * C<format_duration( duration => $dt_duration, pattern => $pattern )>
+=item * C<<format_duration( duration => $dt_duration, pattern => $pattern )>>
 
 Returns a string representing a L<DateTime::Duration> object in the format set 
 by the pattern. If the first form is used, the pattern is taken from the 
@@ -951,15 +951,15 @@ This module works from lowest to highest precision to calculate the duration.
 So, based on a C<base> of 2004-03-28T00:00:00 the following transformations take
 place:
 
-	2003-01-01T00:00:00 - 2 years = 2001-01-01T00:00:00  === -2 years
-	2001-01-01T00:00:00 + 1 month = 2001-02-01T00:00:00 === -1 year, 11 months
-	2001-02-01T00:00:00 + 22 days = 2001-02-23T00:00:00 === -1yr, 10mths, 6days
-	2001-02-22T00:00:00 + 11 hours = 2001-02-23T11:00:00 === -1y, 10m, 6d, 13h 
+	2003-01-01T00:00:00 - 2 years   = 2001-01-01T00:00:00 === -2 years
+	2001-01-01T00:00:00 + 1 month   = 2001-02-01T00:00:00 === -1 year, 11 months
+	2001-02-01T00:00:00 + 22 days   = 2001-02-23T00:00:00 === -1yr, 10mths, 6days
+	2001-02-22T00:00:00 + 11 hours  = 2001-02-23T11:00:00 === -1y, 10m, 6d, 13h 
 	2001-02-22T11:00:00 - 9 minutes = 2001-02-23T10:51:00 === -1y, 10m, 6d, 13h, 9m 
 
 =for html <img src="http://search.cpan.org/src/RICKM/DateTime-Format-Duration-1.0002/docs/figure1.gif">
 
-=for man See: hhttp://search.cpan.org/src/RICKM/DateTime-Format-Duration-1.0002/docs/figure1.gif
+=for man See: http://search.cpan.org/src/RICKM/DateTime-Format-Duration-1.0002/docs/figure1.gif
 
 Figure 1 illustrates that, with the given base, -2 years, +1 month,
 +22 days, +11 hours, -9 minutes is normalised to -1 year, 10 months, 6 days,
@@ -1036,9 +1036,15 @@ to 'ISO', months will be normalised to 30 days.
 
 =head2 Deltas vs Duration Objects
 
-This module can bypass duration objects and just work with delta hashes. This
-is of use for durations that contains mixed positive and negative components. 
-Note the following:
+This module can bypass duration objects and just work with delta hashes. 
+This used to be of greatest value with earlier versions of DateTime::Duration
+when DateTime::Duration assumed a duration with one negative component was a 
+negative duration (that is, -2 hours, 34 minutes was assumed to be -2 hours, 
+-34 minutes).
+
+These extra methods have been left in here firstly for backwards-compatibility
+but also as an added 'syntactic sugar'. Consider these two equivelent 
+expressions:
 
 	$one = $o->format_duration(
 		DateTime::Duration->new(
@@ -1054,15 +1060,8 @@ Note the following:
 		hours => -1
 	);
 
-While these both appear to be the same, the return very different answers:
-$one is -2 years, 13 days and 2 hours, whereas $two is -1 year, 11 months,
-18 days and 23 hours.
-	
-This is because DateTime::Duration has been designed to not allow mixed
-positive and negative components. If there is one or more negative values 
-then all values are assumed to be negative. Using deltas allows you to set 
-mixed values.
-
+These both create the same string in $one and $two, but if you don't already 
+have a DateTime::Duration object, the later looks cleaner. 
 
 =head1 AUTHOR
 
@@ -1070,9 +1069,9 @@ Rick Measham <rickm@cpan.org>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2003 Rick Measham.  All rights reserved.  This program
-is free software; you can redistribute it and/or modify it under the
-same terms as Perl itself.
+Copyright (c) 2003 - 2004 Rick Measham.  All rights reserved.  This program
+is free software; you can redistribute it and/or modify it under the same 
+terms as Perl itself.
 
 The full text of the license can be found in the LICENSE file included
 with this module.

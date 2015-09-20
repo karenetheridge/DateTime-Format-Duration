@@ -7,7 +7,7 @@ use DateTime::Format::Duration;
 
 #########################
 
-use Test::More tests=>10;
+use Test::More tests=>5;
 
 $strf = DateTime::Format::Duration->new(
 	base => DateTime->new( year=> 2003 ),
@@ -93,15 +93,6 @@ foreach my $test (@tests) {
 		$test->{title}
 	) or diag( "Failed on " . $test->{pattern} . "\n" . 
 		       "Got: " . Dump( $test->{duration} ));
-	
-	is( 
-		$strf->format_duration( DateTime::Duration->new( %{$test->{duration}} )),
-		$test->{expect_duration},
-		$test->{title} . ' as Duration object',
-	) or diag( "Failed on " . $test->{pattern} ) . 
-		diag( "Got: " . Dump( $test->{duration} )).
-		diag( "Deltas: " . Dump( {DateTime::Duration->new( %{$test->{duration}} )->deltas} ));
-
 	$strf->{diagnostic} = 0;
 }
 

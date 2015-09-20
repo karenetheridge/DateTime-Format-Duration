@@ -41,7 +41,7 @@ test(
 	['%F', '0002-03-04',		'0002-03-04 00:00:00.000000000', '%P%F %r.%N', 'Group Components'],
 	['%r', '02:03:04',		'0000-00-00 02:03:04.000000000'],
 	['%R', '02:03',		'0000-00-00 02:03:00.000000000'],
-	['%T', '-02:03:04',		'-0000-00-00 02:03:04.000000000'],	
+	['%T', '-02:-03:-04',		'-0000-00-00 02:03:04.000000000'],	
 	
 );
 
@@ -92,10 +92,10 @@ sub in_range {
 	
 	foreach my $part( split(/,\s*/, $argv) ) {
 		my ($start, $end) = $part =~ /(\d+)\s*\.\.\s*(\d+)/;
-		($start, $end) = ($end, $start) if $end < $start;
+		($start, $end) = ($end, $start) if $end and $start and $end < $start;
 		
-		next if $start > $test;
-		return 1 if $end > $test
+		next if $start and $test and $start > $test;
+		return 1 if $end and $test and $end > $test
 		
 	}
 	

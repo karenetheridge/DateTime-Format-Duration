@@ -43,6 +43,11 @@ Revision history for Perl extension DateTime::Format::Duration.
 		- fixed a missing escape on the whitespace parser
 			- thanks to fairly anonymous CPAN tester!
 
+1.02 2004-04-04
+	- the 'Mixed Components' release
+		- DateTime::Duration now accepts mixed components so the need
+		  to handle them differently has been removed. Old methods
+		  remain in place though. See the POD.
 
 
 
