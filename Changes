@@ -1,0 +1,9 @@
+Revision history for Perl extension DateTime::Format::StrfDuration.
+
+0.00  Sun Nov  9 18:39:56 2003
+	- original version; created by h2xs 1.22 with options
+		-X -v1.00 --use-new-tests -b5.0.5 -nDateTime::Format::StrfDuration
+
+1.00  Tue Dec 16 00:29:43 2003 (Australia/Melbourne)
+	- initial release to mailing list
+		
