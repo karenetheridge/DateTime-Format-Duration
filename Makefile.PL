@@ -9,7 +9,7 @@ WriteMakefile(
     'VERSION_FROM'	=> 'lib/DateTime/Format/Duration.pm',
     'PREREQ_PM'		=> {
 		'Test::More'  =>  0,
-		'DateTime'	  =>  0.14,
+		'DateTime'	  =>  0.30,
 		'DateTime::Duration' => 0,
 	}, 
     ($] >= 5.005 ?  
