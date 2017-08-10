@@ -1,5 +1,5 @@
 
-use Test::More tests => 7;
+use Test::More tests => 20;
 
 use warnings;
 use DateTime;
@@ -44,4 +44,46 @@ is( $strf->format_duration( $duration ), (22*24*60*60) + (36*60*60), '22 days, 3
 
 $strf->set_pattern('%u');
 is( $strf->format_duration( $duration ), '2', '22 days, 36 hours as days modulus 7' );
+
+
+$duration = DateTime::Duration->new( months => 2, days => 2, hours => 30, minutes => 3 );
+$strf->set_normalising(1);
+$strf->set_pattern('%H');
+is( $strf->format_duration( $duration ), '06','format %H 30 - 24 = 06' );
+
+$strf->set_pattern('%-H');
+is( $strf->format_duration( $duration ), '6','format %-H 30 - 24 = 6' );
+
+$strf->set_pattern('%I');
+is( $strf->format_duration( $duration ), '06','format %I 30 - 24 = 06' );
+
+$strf->set_pattern('%-I');
+is( $strf->format_duration( $duration ), '6','format %-I 30 - 24 = 6' );
+
+$strf->set_pattern('%k');
+is( $strf->format_duration( $duration ), ' 6','format %k 30 - 24 =  6' );
+
+$strf->set_pattern('%-k');
+is( $strf->format_duration( $duration ), '6','format %-k 30 - 24 = 6' );
+
+$strf->set_pattern('%l');
+is( $strf->format_duration( $duration ), ' 6','format %l 30 - 24 =  6' );
+
+$strf->set_pattern('%-l');
+is( $strf->format_duration( $duration ), '6','format %-l 30 - 24 = 6' );
+
+$strf->set_pattern('%e');
+is( $strf->format_duration( $duration ), '3','format %e 3 days' );
+
+$strf->set_pattern('%m');
+is( $strf->format_duration( $duration ), '02','format %m 02 months' );
+
+$strf->set_pattern('%-m');
+is( $strf->format_duration( $duration ), '2','format %-m 2 months' );
+
+$strf->set_pattern('%M');
+is( $strf->format_duration( $duration ), '03','format %M 03 minutes' );
+
+$strf->set_pattern('%-M');
+is( $strf->format_duration( $duration ), '3','format %-M 3 minutes' );
 

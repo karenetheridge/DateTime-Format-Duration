@@ -80,12 +80,18 @@ my %formats =
       'e' => sub { sprintf( '%d', $_[0]->{days} ) },
       'F' => sub { sprintf( '%04d-%02d-%02d', $_[0]->{years}, $_[0]->{months}, $_[0]->{days} ) },
       'H' => sub { sprintf( '%02d', $_[0]->{hours} ) },
+      '-H'=> sub { sprintf( '%d', $_[0]->{hours} ) },
       'I' => sub { sprintf( '%02d', $_[0]->{hours} ) },
+      '-I'=> sub { sprintf( '%d', $_[0]->{hours} ) },
       'j' => sub { $_[1]->as_days($_[0]) },
       'k' => sub { sprintf( '%2d', $_[0]->{hours} ) },
+      '-k'=> sub { sprintf( '%d', $_[0]->{hours} ) },
       'l' => sub { sprintf( '%2d', $_[0]->{hours} ) },
+      '-l'=> sub { sprintf( '%d', $_[0]->{hours} ) },
       'm' => sub { sprintf( '%02d', $_[0]->{months} ) },
+      '-m'=> sub { sprintf( '%d', $_[0]->{months} ) },
       'M' => sub { sprintf( '%02d', $_[0]->{minutes} ) },
+      '-M'=> sub { sprintf( '%d', $_[0]->{minutes} ) },
       'n' => sub { "\n" }, # should this be OS-sensitive?"
       'N' => sub { _format_nanosecs(@_) },
       'p' => sub { ($_[0]->{negative}) ? '-' : '+' },
@@ -174,6 +180,17 @@ sub format_duration_from_deltas {
                 : $formats{$2}->(\%duration, $self)
             : $1
 
+           /sgex;
+
+        # H or I = 2 digit hours, k or l = space padded hours, m or M = minutes
+        $f =~ s/
+            %-(\d*)([HIklmM])
+               /
+            $formats{"-$2"}
+               ? ($1)
+                 ? sprintf("%0$1d", substr($formats{"-$2"}->(\%duration, $self),$1*-1) )
+                 : $formats{"-$2"}->(\%duration, $self)
+               : $1
            /sgex;
 
         # %3N
@@ -508,10 +525,13 @@ sub _format_nanosecs {
 sub _build_parser {
     my $self = shift;
     my $regex = my $field_list = shift || $self->pattern;
-    my @fields = $field_list =~ m/(%\{\w+\}|%\d*.)/g;
+    my @fields = $field_list =~ m/(%\{\w+\}|%\-*\d*.)/g;
     $field_list = join('',@fields);
 
     my $tempdur = DateTime::Duration->new( seconds => 0 ); # Created just so we can do $tempdt->can(..)
+
+    # Don't need the padding remover for parsing 
+    $regex =~ s/%\-([HIklmM])/%$1/g;
 
     # I'm absoutely certain there's a better way to do this:
     $regex=~s|([\/\.\-])|\\$1|g;
@@ -545,7 +565,7 @@ sub _build_parser {
 
     # Months:
     $regex =~ s/%(\d*)[m]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
-    $field_list =~ s/%(\d*)[m]/#months#/g;
+    $field_list =~ s/%(-*\d*)[m]/#months#/g;
 
     # Weeks:
     $regex =~ s/%(\d*)[GV]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
@@ -559,11 +579,11 @@ sub _build_parser {
 
     # Hours:
     $regex =~ s/%(\d*)[HIkl]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
-    $field_list =~ s/%(\d*)[HIkl]/#hours#/g;
+    $field_list =~ s/%(-*\d*)[HIkl]/#hours#/g;
 
     # Minutes:
     $regex =~ s/%(\d*)[M]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
-    $field_list =~ s/%(\d*)[M]/#minutes#/g;
+    $field_list =~ s/%(-*\d*)[M]/#minutes#/g;
 
     # Seconds:
     $regex =~ s/%(\d*)[sS]/($1) ? " *([+-]?\\d{$1})" : " *([+-]?\\d+)"/eg;
